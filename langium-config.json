@@ -1,0 +1,15 @@
+{
+    "projectName": "MetaSolverStrategy",
+    "languages": [{
+        "id": "meta-solver-strategy",
+        "grammar": "src/language/meta-solver-strategy.langium",
+        "fileExtensions": [".mss"],
+        "textMate": {
+            "out": "syntaxes/meta-solver-strategy.tmLanguage.json"
+        },
+        "monarch": {
+            "out": "src/syntaxes/meta-solver-strategy.monarch.ts"
+        }
+    }],
+    "out": "src/language/generated"
+}
