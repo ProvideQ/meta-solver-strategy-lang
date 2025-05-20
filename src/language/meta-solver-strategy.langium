@@ -33,7 +33,7 @@ ProblemAttribute:
     ProblemAttributeInt;
 
 ProblemAttributeInt:
-    size="size"; // TODO: only allow attributes that are valid for the problem type
+    size=NAME; // TODO: only allow attributes that are valid for the problem type
 
 // ProblemAttributeString:
 //     size="size"; // TODO: only allow attributes that are valid for the problem type
@@ -52,7 +52,7 @@ Foreach:
 If:
     "if" condition=Condition ":"
         solve=Solve
-    "else:"
+    "else" ":"
         elseSolve=Solve;
 
 Condition:
@@ -84,8 +84,11 @@ ComparisonOperatorString:
     | notEqual="!=";
 
 Solver:
-    name=ProblemName "." type=ID "()"
+    problemName=[ProblemName:NAME] "." type=SolverID "()" // TODO: Add arguments which includes solver settings
         SubRoutines?;
+
+SolverID:
+    solverId=ID; // TODO: enforce solverId is a valid solver id from a list of given solver ids
 
 SubRoutines:
     ":"
