@@ -46,7 +46,7 @@ SolveMany:
     Foreach;
 
 Foreach:
-    "foreach" variable=ProblemName "in" collection=ProblemArrayName ":"
+    "foreach" variable=ProblemName "in" collection=[ProblemArrayName:NAME] ":"
         solve=Solve;
 
 If:
@@ -66,10 +66,10 @@ Comparison:
     | ComparisonString;
 
 ComparisonInteger:
-    problemName=ProblemName "." attribute=ProblemAttributeInt operator=ComparisonOperatorInteger value=INT; // TODO: make sure types match
+    problemName=[ProblemName:NAME] "." attribute=ProblemAttributeInt operator=ComparisonOperatorInteger value=INT; // TODO: make sure types match
 
 ComparisonString:
-    problemName=ProblemName "." attribute=ProblemAttributeInt operator=ComparisonOperatorString value=INT; // TODO: make sure types match
+    problemName=[ProblemName:NAME] "." attribute=ProblemAttributeInt operator=ComparisonOperatorString value=STRING; // TODO: make sure types match
 
 ComparisonOperatorInteger:
     less="<"
