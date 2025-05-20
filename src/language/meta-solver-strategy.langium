@@ -80,11 +80,7 @@ ComparisonOperatorInteger:
     | notEqual="!=";
 
 ComparisonOperatorString:
-    less="<"
-    | lessOrEqual="<="
-    | greater=">"
-    | greaterOrEqual=">="
-    | equal="=="
+    equal="=="
     | notEqual="!=";
 
 Solver:
