@@ -3,6 +3,7 @@ import { createDefaultModule, createDefaultSharedModule, type DefaultSharedModul
 import { MetaSolverStrategyGeneratedModule, MetaSolverStrategyGeneratedSharedModule } from './generated/module.js';
 import { MetaSolverStrategyValidator, registerValidationChecks } from './meta-solver-strategy-validator.js';
 import { MetaSolverStrategyCompletionsProvider } from './meta-solver-strategy-completions-provider.js';
+import { MetaSolverStrategyHoverProvider } from "./meta-solver-strategy-hover-provider.js";
 
 /**
  * Declaration of custom services - add your own service classes here.
@@ -29,6 +30,7 @@ export const MetaSolverStrategyModule: Module<MetaSolverStrategyServices, Partia
         MetaSolverStrategyValidator: () => new MetaSolverStrategyValidator()
     },
     lsp: {
+        HoverProvider: (services) => new MetaSolverStrategyHoverProvider(services),
         CompletionProvider: (services) => new MetaSolverStrategyCompletionsProvider(services)
     }
 };
