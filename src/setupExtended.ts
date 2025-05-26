@@ -14,14 +14,18 @@ export const setupConfigExtended = (): UserConfig => {
                 languageId: 'meta-solver-strategy',
                 code: `Solve VRP vrp:
   if vrp.size > 10:
-    vrp.Cluster():
-      Solve TSP[] tsps:
-        foreach tsp in tsps:
-          tsp.Qubo():
-            Solve Qubo qubo:
-              qubo.Qrisp()
+    vrp.ClusterAndSolveVrpSolver():
+      Solve ClusterVRP clustervrp:
+        clustervrp.TwoPhaseClusterer():
+          Solve TSP[] tsps:
+            foreach tsp in tsps:
+              tsp.QuboTspSolver():
+                Solve Qubo qubo:
+                  qubo.DwaveQuboSolver(
+                    "D-Wave Token" = "token",
+                    "Annealing Method" = "sim")
   else:
-    vrp.Lkh3()`,
+    vrp.LkhVrpSolver()`,
                 useDiffEditor: false,
                 extensions: [{
                     config: {

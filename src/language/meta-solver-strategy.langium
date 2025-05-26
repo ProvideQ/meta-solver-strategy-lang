@@ -82,8 +82,11 @@ ComparisonOperatorString:
     | notEqual="!=";
 
 Solver:
-    problemName=[ProblemName:NAME] "." solverId=SolverID "()" // TODO: Add arguments which includes solver settings
+    problemName=[ProblemName:NAME] "." solverId=SolverID "(" (settings+=SolverSetting ("," settings+=SolverSetting)* )? ")" // TODO: Add arguments which includes solver settings
         SubRoutines?;
+
+SolverSetting:
+    settingName=STRING "=" settingValue=STRING;
 
 SolverID:
     solverId=ID; // TODO: enforce solverId is a valid solver id from a list of given solver ids

@@ -37,7 +37,8 @@ export class MetaSolverStrategyCompletionsProvider extends DefaultCompletionProv
 
                     let insertText = `${id}()`;
                     if (settings.length > 0) {
-                        insertText = `${id}(\n${settings.map((setting) => `\t${setting.name}=\${${snippetJumpIndex++}}`).join(",\n")})`;
+                        insertText = `${id}(\n${settings.map((setting) => `\t"${setting.name}" = "\${${snippetJumpIndex++}}"`).join(",\n")})`;
+                        // TODO: support auto complete for select settings
                     }
 
                     if (subRoutines.length > 0) {
