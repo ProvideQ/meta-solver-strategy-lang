@@ -2,7 +2,7 @@ import { type Module, inject } from 'langium';
 import { createDefaultModule, createDefaultSharedModule, type DefaultSharedModuleContext, type LangiumServices, type LangiumSharedServices, type PartialLangiumServices } from 'langium/lsp';
 import { MetaSolverStrategyGeneratedModule, MetaSolverStrategyGeneratedSharedModule } from './generated/module.js';
 import { MetaSolverStrategyValidator, registerValidationChecks } from './meta-solver-strategy-validator.js';
-import { MetaSolverStrategyCompletionsProvider } from './meat-solver-strategy-completions-provider.js';
+import { MetaSolverStrategyCompletionsProvider } from './meta-solver-strategy-completions-provider.js';
 
 /**
  * Declaration of custom services - add your own service classes here.
