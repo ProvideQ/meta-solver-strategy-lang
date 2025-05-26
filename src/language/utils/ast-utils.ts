@@ -1,7 +1,7 @@
-import { Foreach, ProblemName, SolveProblem } from "../generated/ast.js";
+import { Foreach, ProblemName, SolveProblem, SolverID } from "../generated/ast.js";
 import * as api from "../../api/ToolboxAPI.js";
 
-export function getProblemType(problemName: ProblemName): api.ProblemType | undefined {
+export function getProblemTypeByProblemName(problemName: ProblemName): api.ProblemType | undefined {
     const definitionContainer = problemName.$container;
     if (definitionContainer === undefined) return;
 
@@ -14,4 +14,10 @@ export function getProblemType(problemName: ProblemName): api.ProblemType | unde
     }
 
     return undefined;
+}
+
+export function getProblemTypeBySolverId(solverId: SolverID): api.ProblemType | undefined {
+    if (!solverId.$container.problemName?.ref) return undefined;
+
+    return getProblemTypeByProblemName(solverId.$container.problemName.ref);
 }

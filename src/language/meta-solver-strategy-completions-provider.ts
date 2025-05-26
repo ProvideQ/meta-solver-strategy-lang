@@ -3,7 +3,7 @@ import { CompletionItemKind } from "vscode-languageserver";
 import { ProblemAttributeInt, ProblemType, Solver, SolverID, } from "./generated/ast.js";
 import { GrammarAST } from "langium";
 import * as api from "../api/ToolboxAPI.ts";
-import { getProblemType } from "./utils/ast-utils.js";
+import { getProblemTypeBySolverId } from "./utils/ast-utils.js";
 import { getSimpleSolverName } from "./utils/solver-utils.js";
 
 export class MetaSolverStrategyCompletionsProvider extends DefaultCompletionProvider {
@@ -19,12 +19,10 @@ export class MetaSolverStrategyCompletionsProvider extends DefaultCompletionProv
                 }
                 break;
             case SolverID:
-                const solverId: Solver = context.node as Solver;
-                if (solverId.problemName === undefined) return;
+                const solver: Solver = context.node as Solver;
+                if (solver.problemName === undefined) return;
 
-                const problemType = solverId.problemName.ref
-                    ? getProblemType(solverId.problemName.ref)
-                    : undefined;
+                const problemType = getProblemTypeBySolverId(solver.solverId);
                 if (problemType === undefined) return;
 
                 const solvers = await api.fetchSolvers(problemType.id);

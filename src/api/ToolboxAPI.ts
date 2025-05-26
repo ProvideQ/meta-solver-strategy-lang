@@ -77,6 +77,14 @@ export function getProblemTypeByName(problemName: string | undefined): ProblemTy
   return problemTypes.find((problemType) => problemType.name === problemName);
 }
 
+export async function getSolverById(
+    problemTypeId: string,
+    solverMatch: (solver: ProblemSolverInfo) => boolean
+): Promise<ProblemSolverInfo | undefined> {
+  const solvers = await fetchSolvers(problemTypeId);
+  return solvers.find(solverMatch);
+}
+
 export async function fetchProblem<T>(
   problemTypeId: string,
   problemId: string

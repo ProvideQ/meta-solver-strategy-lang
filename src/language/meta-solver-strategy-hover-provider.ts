@@ -1,9 +1,9 @@
 import { MultilineCommentHoverProvider } from "langium/lsp";
 import { AstNode, LangiumDocument, MaybePromise, CstUtils, GrammarAST, } from "langium";
 import { Hover, type HoverParams } from "vscode-languageserver";
-import { ProblemArrayName, ProblemName, ProblemType, SolverID } from "./generated/ast.js";
+import { ProblemArrayName, ProblemName, ProblemType, SolverID, SolverSetting } from "./generated/ast.js";
 import { getProblemTypeByName } from "../api/ToolboxAPI.js";
-import { getProblemType } from "./utils/ast-utils.js";
+import { getProblemTypeByProblemName, getProblemTypeBySolverId } from "./utils/ast-utils.js";
 import * as api from "../api/ToolboxAPI.ts";
 import { getSimpleSolverName } from "./utils/solver-utils.js";
 
@@ -58,9 +58,7 @@ ${type.description}`
             }
             case SolverID: {
                 const solverId: SolverID = node as SolverID;
-                if (!solverId.$container.problemName?.ref) break;
-
-                const problemType = getProblemType(solverId.$container.problemName.ref);
+                const problemType = getProblemTypeBySolverId(solverId);
                 if (!problemType) break;
 
                 const solvers = await api.fetchSolvers(problemType.id);
@@ -77,6 +75,30 @@ ${solver.description}`
                     }
                 }
 
+                break;
+            }
+            case SolverSetting: {
+                const solverSetting: SolverSetting = node as SolverSetting;
+                const solverId = solverSetting.$container.solverId;
+                if (!solverId) break;
+
+                const problemType = getProblemTypeBySolverId(solverId);
+                if (!problemType) break;
+
+                const solver = await api.getSolverById(problemType.id, (solver) => getSimpleSolverName(solver)  == solverId.solverId);
+                if (!solver) break;
+
+                const solverSettings = await api.fetchSolverSettings(problemType.id, solver.id);
+                const setting = solverSettings.find(s => s.name === solverSetting.settingName);
+                if (setting) {
+                    return {
+                        contents: {
+                            kind: 'markdown',
+                            value: `**Setting for solver ${solverId.solverId}**\n\n
+${setting.description}`
+                        }
+                    };
+                }
                 break;
             }
         }
@@ -103,7 +125,7 @@ ${problemType.description}`
             }
             case ProblemName: {
                 const problemName: ProblemName = node as ProblemName;
-                const problemType = getProblemType(problemName);
+                const problemType = getProblemTypeByProblemName(problemName);
                 if (problemType) {
                     return {
                         contents: {
