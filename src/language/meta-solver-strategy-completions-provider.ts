@@ -1,23 +1,10 @@
 import { CompletionAcceptor, CompletionContext, DefaultCompletionProvider, NextFeature } from "langium/lsp";
 import { CompletionItemKind } from "vscode-languageserver";
-import { Foreach, ProblemAttributeInt, ProblemName, ProblemType, SolveProblem, Solver, SolverID, } from "./generated/ast.js";
-import { GrammarAST, Reference } from "langium";
+import { ProblemAttributeInt, ProblemType, Solver, SolverID, } from "./generated/ast.js";
+import { GrammarAST } from "langium";
 import * as api from "../api/ToolboxAPI.ts";
-
-function getProblemType(problemNameRef: Reference<ProblemName>): api.ProblemType | undefined {
-    const definitionContainer = problemNameRef.ref?.$container;
-    if (definitionContainer === undefined) return;
-
-    if (definitionContainer.$type === SolveProblem) {
-        const solveProblem: SolveProblem = definitionContainer as SolveProblem;
-        return api.getProblemTypeByName(solveProblem.problemType?.problemType);
-    } else if (definitionContainer.$type === Foreach) {
-        const foreach: Foreach = definitionContainer as Foreach;
-        return api.getProblemTypeByName(foreach.collection.ref?.$container.problemTypes?.problemType.problemType);
-    }
-
-    return undefined;
-}
+import { getProblemType } from "./utils/ast-utils.js";
+import { getSimpleSolverName } from "./utils/solver-utils.js";
 
 export class MetaSolverStrategyCompletionsProvider extends DefaultCompletionProvider {
     protected override async completionFor(context: CompletionContext, next: NextFeature, acceptor: CompletionAcceptor): Promise<void> {
@@ -35,12 +22,14 @@ export class MetaSolverStrategyCompletionsProvider extends DefaultCompletionProv
                 const solverId: Solver = context.node as Solver;
                 if (solverId.problemName === undefined) return;
 
-                const problemType = getProblemType(solverId.problemName)
+                const problemType = solverId.problemName.ref
+                    ? getProblemType(solverId.problemName.ref)
+                    : undefined;
                 if (problemType === undefined) return;
 
                 const solvers = await api.fetchSolvers(problemType.id);
                 for (const solver of solvers) {
-                    const id = solver.id.lastIndexOf(".") > -1 ? solver.id.substring(solver.id.lastIndexOf(".") + 1) : solver.id;
+                    const id = getSimpleSolverName(solver);
                     const subRoutines = await api.fetchSubRoutines(problemType.id, solver.id);
                     const settings = await api.fetchSolverSettings(problemType.id, solver.id);
 
