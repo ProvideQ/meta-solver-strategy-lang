@@ -46,12 +46,12 @@ If:
 
 Else:
     "else"
-     ( "if" condition=Condition ":"
-            solve=Solve
+     ( "if" condition+=Condition ":"
+            solve+=Solve
         Else
     // We always want to handle the else case to make sure a problem is always solved somehow
      |  ":"
-            solve=Solve);
+            solve+=Solve);
 
 Condition:
     Comparison;
