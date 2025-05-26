@@ -40,10 +40,18 @@ Foreach:
         solve=Solve;
 
 If:
-    "if" condition=Condition ":"
-        solve=Solve
-    "else" ":"
-        elseSolve=Solve;
+    "if" condition+=Condition ":"
+        solve+=Solve
+    Else;
+
+Else:
+    "else"
+     ( "if" condition=Condition ":"
+            solve=Solve
+        Else
+    // We always want to handle the else case to make sure a problem is always solved somehow
+     |  ":"
+            solve=Solve);
 
 Condition:
     Comparison;
