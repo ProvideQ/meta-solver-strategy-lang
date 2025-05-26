@@ -9,7 +9,7 @@ function getProblemType(problemNameRef: Reference<ProblemName>): api.ProblemType
     if (definitionContainer === undefined) return;
 
     if (definitionContainer.$type === SolveProblem) {
-        const solveProblem : SolveProblem = definitionContainer as SolveProblem;
+        const solveProblem: SolveProblem = definitionContainer as SolveProblem;
         return api.getProblemTypeByName(solveProblem.problemType?.problemType);
     } else if (definitionContainer.$type === Foreach) {
         const foreach: Foreach = definitionContainer as Foreach;
@@ -20,56 +20,61 @@ function getProblemType(problemNameRef: Reference<ProblemName>): api.ProblemType
 }
 
 export class MetaSolverStrategyCompletionsProvider extends DefaultCompletionProvider {
-    protected override  async completionFor(context: CompletionContext, next: NextFeature, acceptor: CompletionAcceptor): Promise<void> {
+    protected override async completionFor(context: CompletionContext, next: NextFeature, acceptor: CompletionAcceptor): Promise<void> {
         console.log("TEST CompletionProvider", context, next, acceptor);
-        if (next.type === ProblemType) {
-            for (const problemType of api.problemTypes) {
-                acceptor(context, {
-                    label: problemType.name,
-                    kind: CompletionItemKind.EnumMember,
-                })
-            }
-        } else if (next.type === SolverID) {
-            const solverId: Solver = context.node as Solver;
-            if (solverId.problemName === undefined) return;
-
-            const problemType = getProblemType(solverId.problemName)
-            if (problemType === undefined) return;
-
-            const solvers = await api.fetchSolvers(problemType.id);
-            for (const solver of solvers) {
-                const id = solver.id.lastIndexOf(".") > -1 ? solver.id.substring(solver.id.lastIndexOf(".") + 1) : solver.id;
-                const subRoutines = await api.fetchSubRoutines(problemType.id, solver.id);
-                const settings = await api.fetchSolverSettings(problemType.id, solver.id);
-
-                let snippetJumpIndex = 1;
-                
-                let insertText = `${id}()`;
-                if (settings.length > 0) {
-                    insertText = `${id}(\n${settings.map((setting) => `\t${setting.name}=\${${snippetJumpIndex++}}`).join(",\n")})`;
+        switch (next.type) {
+            case ProblemType:
+                for (const problemType of api.problemTypes) {
+                    acceptor(context, {
+                        label: problemType.name,
+                        kind: CompletionItemKind.EnumMember,
+                    })
                 }
+                break;
+            case SolverID:
+                const solverId: Solver = context.node as Solver;
+                if (solverId.problemName === undefined) return;
 
-                if (subRoutines.length > 0) {
-                    insertText = `${insertText}:
+                const problemType = getProblemType(solverId.problemName)
+                if (problemType === undefined) return;
+
+                const solvers = await api.fetchSolvers(problemType.id);
+                for (const solver of solvers) {
+                    const id = solver.id.lastIndexOf(".") > -1 ? solver.id.substring(solver.id.lastIndexOf(".") + 1) : solver.id;
+                    const subRoutines = await api.fetchSubRoutines(problemType.id, solver.id);
+                    const settings = await api.fetchSolverSettings(problemType.id, solver.id);
+
+                    let snippetJumpIndex = 1;
+
+                    let insertText = `${id}()`;
+                    if (settings.length > 0) {
+                        insertText = `${id}(\n${settings.map((setting) => `\t${setting.name}=\${${snippetJumpIndex++}}`).join(",\n")})`;
+                    }
+
+                    if (subRoutines.length > 0) {
+                        insertText = `${insertText}:
 ${subRoutines.map((subRoutine) => `\tSolve ${api.getProblemTypeById(subRoutine.typeId)?.name} ${api.getProblemTypeById(subRoutine.typeId)?.name.toLowerCase()}:\n\t\t\${${snippetJumpIndex++}}`).join("\n")}`;
-                    // TODO: add setting if subroutines can have multiple problems or just one problem to solve
-                }
+                        // TODO: add setting if subroutines can have multiple problems or just one problem to solve
+                    }
 
+                    acceptor(context, {
+                        label: id,
+                        kind: CompletionItemKind.Function,
+                        documentation: solver.description,
+                        insertTextFormat: 2,
+                        insertText: insertText,
+                    })
+                }
+                break;
+            case ProblemAttributeInt:
                 acceptor(context, {
-                    label: id,
-                    kind: CompletionItemKind.Function,
-                    documentation: solver.description,
-                    insertTextFormat: 2,
-                    insertText: insertText,
+                    label: "size",
+                    kind: CompletionItemKind.Property,
                 })
-            }
-        } else if (next.type === ProblemAttributeInt) {
-            acceptor(context, {
-                label: "size",
-                kind: CompletionItemKind.Property,
-            })
-        } else {
-            await super.completionFor(context, next, acceptor);
+                break
+            default:
+                await super.completionFor(context, next, acceptor);
+                break
         }
     }
 
