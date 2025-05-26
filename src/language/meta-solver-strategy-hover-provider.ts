@@ -72,7 +72,7 @@ ${type.description}`
                         contents: {
                             kind: 'markdown',
                             value: `**Solver for ${problemType.name}**\n\n
-${problemType.description}`
+${solver.description}`
                         }
                     }
                 }
