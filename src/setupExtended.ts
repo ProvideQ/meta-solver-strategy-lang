@@ -18,7 +18,7 @@ export const setupConfigExtended = (): UserConfig => {
       Solve TSP[] tsps:
         foreach tsp in tsps:
           tsp.Qubo():
-            Solve QUBO qubo:
+            Solve Qubo qubo:
               qubo.Qrisp()
   else:
     vrp.Lkh3()`,

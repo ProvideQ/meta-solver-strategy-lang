@@ -1,27 +1,17 @@
-// Solve VRP vrp:
-//   if vrp.size > 10:
-//     vrp.Cluster():
-//       Solve TSP[] tsps:
-//         foreach tsp in tsps:
-//           tsp.Qubo():
-//             Solve QUBO qubo:
-//               qubo.Qrisp()
-//   else:
-//     vrp.Lkh3()
-      
 grammar MetaSolverStrategy
 
 entry SolveProblem:
-    "Solve" type=ProblemType problemName=ProblemName ":"
+    "Solve"
+     (problemType=ProblemType problemName=ProblemName ":"
         solve=Solve
-    | "Solve" type=ProblemTypes problemName=ProblemArrayName ":" // TODO: enforce solve many when subroutine is an array
-        solve=SolveMany;
+    | problemTypes=ProblemTypes problemName=ProblemArrayName ":" // TODO: enforce solve many when subroutine is an array
+        solve=SolveMany);
 
 ProblemType:
-    type=ID; // TODO: enforce type is a valid problem type from a list of given problem types
+    problemType=ID; // TODO: enforce type is a valid problem type from a list of given problem types
 
 ProblemTypes:
-    type=ProblemType "[]";
+    problemType=ProblemType "[]";
 
 ProblemName:
     name=NAME; // TOOD: make sure problem name is only used once in file/scope
@@ -84,7 +74,7 @@ ComparisonOperatorString:
     | notEqual="!=";
 
 Solver:
-    problemName=[ProblemName:NAME] "." type=SolverID "()" // TODO: Add arguments which includes solver settings
+    problemName=[ProblemName:NAME] "." solverId=SolverID "()" // TODO: Add arguments which includes solver settings
         SubRoutines?;
 
 SolverID:

@@ -1,43 +1,68 @@
 import { CompletionAcceptor, CompletionContext, DefaultCompletionProvider, NextFeature } from "langium/lsp";
 import { CompletionItemKind } from "vscode-languageserver";
-import { ProblemAttributeInt, ProblemType, SolverID, } from "./generated/ast.js";
-import { GrammarAST } from "langium";
+import { Foreach, ProblemAttributeInt, ProblemName, ProblemType, SolveProblem, Solver, SolverID, } from "./generated/ast.js";
+import { GrammarAST, Reference } from "langium";
+import * as api from "../api/ToolboxAPI.ts";
+
+function getProblemType(problemNameRef: Reference<ProblemName>): api.ProblemType | undefined {
+    const definitionContainer = problemNameRef.ref?.$container;
+    if (definitionContainer === undefined) return;
+
+    if (definitionContainer.$type === SolveProblem) {
+        const solveProblem : SolveProblem = definitionContainer as SolveProblem;
+        return api.getProblemTypeByName(solveProblem.problemType?.problemType);
+    } else if (definitionContainer.$type === Foreach) {
+        const foreach: Foreach = definitionContainer as Foreach;
+        return api.getProblemTypeByName(foreach.collection.ref?.$container.problemTypes?.problemType.problemType);
+    }
+
+    return undefined;
+}
 
 export class MetaSolverStrategyCompletionsProvider extends DefaultCompletionProvider {
     protected override  async completionFor(context: CompletionContext, next: NextFeature, acceptor: CompletionAcceptor): Promise<void> {
         console.log("TEST CompletionProvider", context, next, acceptor);
         if (next.type === ProblemType) {
-            acceptor(context, {
-                label: "VRP",
-                kind: CompletionItemKind.EnumMember,
-            })
-            acceptor(context, {
-                label: "TSP",
-                kind: CompletionItemKind.EnumMember,
-            })
-            acceptor(context, {
-                label: "QUBO",
-                kind: CompletionItemKind.EnumMember,
-            })
+            for (const problemType of api.problemTypes) {
+                acceptor(context, {
+                    label: problemType.name,
+                    kind: CompletionItemKind.EnumMember,
+                })
+            }
         } else if (next.type === SolverID) {
-            // When auto completing this it should automatically generate the subroutines calls too
-            acceptor(context, {
-                label: "Lkh3",
-                kind: CompletionItemKind.Function,
-            })
-            acceptor(context, {
-                label: "Cluster",
-                documentation: "", // TODO: Load description from solver
-                insertTextFormat: 2,
-                insertText: `Cluster(clusters=\${1:3}):
-\tSolve TSP[] \${2:tsps}:
-\t\t`,
-                kind: CompletionItemKind.Function,
-            })
-            acceptor(context, {
-                label: "Qrisp",
-                kind: CompletionItemKind.Function,
-            })
+            const solverId: Solver = context.node as Solver;
+            if (solverId.problemName === undefined) return;
+
+            const problemType = getProblemType(solverId.problemName)
+            if (problemType === undefined) return;
+
+            const solvers = await api.fetchSolvers(problemType.id);
+            for (const solver of solvers) {
+                const id = solver.id.lastIndexOf(".") > -1 ? solver.id.substring(solver.id.lastIndexOf(".") + 1) : solver.id;
+                const subRoutines = await api.fetchSubRoutines(problemType.id, solver.id);
+                const settings = await api.fetchSolverSettings(problemType.id, solver.id);
+
+                let snippetJumpIndex = 1;
+                
+                let insertText = `${id}()`;
+                if (settings.length > 0) {
+                    insertText = `${id}(\n${settings.map((setting) => `\t${setting.name}=\${${snippetJumpIndex++}}`).join(",\n")})`;
+                }
+
+                if (subRoutines.length > 0) {
+                    insertText = `${insertText}:
+${subRoutines.map((subRoutine) => `\tSolve ${api.getProblemTypeById(subRoutine.typeId)?.name} ${api.getProblemTypeById(subRoutine.typeId)?.name.toLowerCase()}:\n\t\t\${${snippetJumpIndex++}}`).join("\n")}`;
+                    // TODO: add setting if subroutines can have multiple problems or just one problem to solve
+                }
+
+                acceptor(context, {
+                    label: id,
+                    kind: CompletionItemKind.Function,
+                    documentation: solver.description,
+                    insertTextFormat: 2,
+                    insertText: insertText,
+                })
+            }
         } else if (next.type === ProblemAttributeInt) {
             acceptor(context, {
                 label: "size",
