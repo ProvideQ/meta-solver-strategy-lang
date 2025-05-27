@@ -82,7 +82,7 @@ else:
             acceptor(context, {
                 label: "foreach",
                 insertTextFormat: 2,
-                insertText: `foreach \${1:problem} in \${2:problems}:
+                insertText: `foreach \${2:problem} in \${1:problems}:
 \t\${3}`,
                 kind: CompletionItemKind.EnumMember,
             })
