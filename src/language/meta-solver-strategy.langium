@@ -1,7 +1,7 @@
 grammar MetaSolverStrategy
 
 entry SolveProblem:
-    "Solve"
+    "solve"
      (problemType=ProblemType problemName=ProblemName ":"
         solve=Solve
     | problemTypes=ProblemTypes problemName=ProblemArrayName ":" // TODO: enforce solve many when subroutine is an array

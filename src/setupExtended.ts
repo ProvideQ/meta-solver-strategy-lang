@@ -12,15 +12,15 @@ export const setupConfigExtended = (): UserConfig => {
             editorAppConfig: {
                 $type: 'extended',
                 languageId: 'meta-solver-strategy',
-                code: `Solve VRP vrp:
+                code: `solve VRP vrp:
   if vrp.size > 10:
     vrp.ClusterAndSolveVrpSolver():
-      Solve ClusterVRP clustervrp:
+      solve ClusterVRP clustervrp:
         clustervrp.TwoPhaseClusterer():
-          Solve TSP[] tsps:
+          solve TSP[] tsps:
             foreach tsp in tsps:
               tsp.QuboTspSolver():
-                Solve Qubo qubo:
+                solve Qubo qubo:
                   qubo.DwaveQuboSolver(
                     "D-Wave Token" = "token",
                     "Annealing Method" = "sim")

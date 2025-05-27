@@ -41,7 +41,7 @@ export class MetaSolverStrategyCompletionsProvider extends DefaultCompletionProv
 
                     if (subRoutines.length > 0) {
                         insertText = `${insertText}:
-${subRoutines.map((subRoutine) => `\tSolve ${api.getProblemTypeById(subRoutine.typeId)?.name} ${api.getProblemTypeById(subRoutine.typeId)?.name.toLowerCase()}:\n\t\t\${${snippetJumpIndex++}}`).join("\n")}`;
+${subRoutines.map((subRoutine) => `\tsolve ${api.getProblemTypeById(subRoutine.typeId)?.name} ${api.getProblemTypeById(subRoutine.typeId)?.name.toLowerCase()}:\n\t\t\${${snippetJumpIndex++}}`).join("\n")}`;
                         // TODO: add setting if subroutines can have multiple problems or just one problem to solve
                     }
 
