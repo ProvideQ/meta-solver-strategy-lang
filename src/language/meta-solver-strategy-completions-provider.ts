@@ -2,18 +2,18 @@ import { CompletionAcceptor, CompletionContext, DefaultCompletionProvider, NextF
 import { CompletionItemKind } from "vscode-languageserver";
 import { ProblemAttributeInt, ProblemType, Solver, SolverID, } from "./generated/ast.js";
 import { GrammarAST } from "langium";
+import { problemTypes } from "../api/ToolboxAPI.ts";
 import * as api from "../api/ToolboxAPI.ts";
 import { getProblemTypeByProblemName } from "./utils/ast-utils.js";
-import { getSimpleSolverName } from "./utils/solver-utils.js";
 
 export class MetaSolverStrategyCompletionsProvider extends DefaultCompletionProvider {
     protected override async completionFor(context: CompletionContext, next: NextFeature, acceptor: CompletionAcceptor): Promise<void> {
         console.log("TEST CompletionProvider", context, next, acceptor);
         switch (next.type) {
             case ProblemType:
-                for (const problemType of api.problemTypes) {
+                for (const problemType of problemTypes) {
                     acceptor(context, {
-                        label: problemType.name,
+                        label: problemType.id,
                         kind: CompletionItemKind.EnumMember,
                     })
                 }
@@ -21,32 +21,31 @@ export class MetaSolverStrategyCompletionsProvider extends DefaultCompletionProv
             case SolverID:
                 const solver: Solver = context.node as Solver;
                 if (solver.problemName.ref === undefined) return;
-
+                
                 const problemType = getProblemTypeByProblemName(solver.problemName.ref);
                 if (problemType === undefined) return;
-
+                
                 const solvers = await api.fetchSolvers(problemType.id);
                 for (const solver of solvers) {
-                    const id = getSimpleSolverName(solver);
                     const subRoutines = await api.fetchSubRoutines(problemType.id, solver.id);
                     const settings = await api.fetchSolverSettings(problemType.id, solver.id);
-
+                    
                     let snippetJumpIndex = 1;
 
-                    let insertText = `${id}()`;
+                    let insertText = `${solver.id}()`;
                     if (settings.length > 0) {
-                        insertText = `${id}(\n${settings.map((setting) => `\t"${setting.name}" = "\${${snippetJumpIndex++}}"`).join(",\n")})`;
+                        insertText = `${solver.id}(\n${settings.map((setting) => `\t"${setting.name}" = "\${${snippetJumpIndex++}}"`).join(",\n")})`;
                         // TODO: support auto complete for select settings
                     }
 
                     if (subRoutines.length > 0) {
                         insertText = `${insertText}:
-${subRoutines.map((subRoutine) => `\tsolve ${api.getProblemTypeById(subRoutine.typeId)?.name} ${api.getProblemTypeById(subRoutine.typeId)?.name.toLowerCase()}:\n\t\t\${${snippetJumpIndex++}}`).join("\n")}`;
+${subRoutines.map((subRoutine) => `\tsolve ${api.getProblemType(subRoutine.typeId)?.id} ${api.getProblemType(subRoutine.typeId)?.id.toLowerCase()}:\n\t\t\${${snippetJumpIndex++}}`).join("\n")}`;
                         // TODO: add setting if subroutines can have multiple problems or just one problem to solve
                     }
 
                     acceptor(context, {
-                        label: id,
+                        label: solver.id,
                         kind: CompletionItemKind.Function,
                         documentation: solver.description,
                         insertTextFormat: 2,

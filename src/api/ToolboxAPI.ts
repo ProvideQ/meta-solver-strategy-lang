@@ -11,78 +11,44 @@ export const baseUrl = () => import.meta.env.VITE_API_BASE_URL;
 
 export interface ProblemType {
   id: string;
-  name: string;
   description?: string;
 }
 
-// TODO: Replace with endpoint to get all problem types
-export const problemTypes : ProblemType[] = [
-  {
-    id: "cluster-vrp",
-    name: "ClusterVRP",
-    description: "Cluster a Vehicle Routing Problem (VRP) into smaller subproblems.",
-  },
-  {
-    id: "feature-model-anomaly-dead",
-    name: "FeatureModelAnomalyDead",
-    description: "A searching problem: For a given feature model, check if the model contains dead features.",
-  },
-  {
-    id: "feature-model-anomaly-void",
-    name: "FeatureModelAnomalyVoid",
-    description: "A searching problem: For a given feature model, check if the model is void.",
-  },
-  {
-    id: "knapsack",
-    name: "Knapsack",
-    description: "An optimization problem: For given items each with a weight and value, determine which items are part of a collection where the total weight is less than or equal to a given limit and the sum of values is as large as possible.",
-  },
-  {
-    id: "max-cut",
-    name: "MaxCut",
-    description: "An optimization problem: For a given graph, find the optimal separation of vertices that maximises the cut crossing edge weight sum.",
-  },
-  {
-    id: "qubo",
-    name: "Qubo",
-    description: "QUBO (Quadratic Unconstrained Binary Optimization) A combinatorial optimization problem. For a given quadratic term with binary decision variables, find the minimal variable assignment of the term.",
-  },
-  {
-    id: "sat",
-    name: "SAT",
-    description: "A satisfiability problem: For a given boolean formula, check if there is an interpretation that satisfies the formula.",
-  },
-  {
-    id: "sharpsat",
-    name: "SharpSAT",
-    description: "A satisfiability counting problem: For a given boolean formula, count number of interpretations that satisfies the formula. NP-Hard in nature.",
-  },
-  {
-    id: "tsp",
-    name: "TSP",
-    description: "A Traveling Sales Person Problem. Optimization Problem with the goal of find an optimal route between a given set of connected cities.",
-  },
-  {
-    id: "vrp",
-    name: "VRP",
-    description: "A Capacitated Vehicle Routing Problem Optimization Problem with the goal to find a minimal route for a given set of trucks and cities with demand.",
-  }
-]
+export const problemTypes : ProblemType[] = [];
 
-export function getProblemTypeById(problemId: string | undefined): ProblemType | undefined {
+export function getProblemType(problemId: string | undefined): ProblemType | undefined {
   return problemTypes.find((problemType) => problemType.id === problemId);
 }
 
-export function getProblemTypeByName(problemName: string | undefined): ProblemType | undefined {
-  return problemTypes.find((problemType) => problemType.name === problemName);
+export async function initialize() {
+  let x = await getProblemTypes();
+  console.log("Problem Types:", x);
+  problemTypes.push(...x);
+  console.log("Initialized problem types:", problemTypes);
 }
 
-export async function getSolverById(
-    problemTypeId: string,
-    solverMatch: (solver: ProblemSolverInfo) => boolean
-): Promise<ProblemSolverInfo | undefined> {
+export async function getProblemTypes(): Promise<ProblemType[]> {
+  return fetch(`${baseUrl()}/problems`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
+    .then(async (response) => {
+      let x = await response.json()
+      console.log(x)
+      return x})
+    .then((json) => json as ProblemType[])
+    .catch((reason) => {
+      console.error(reason);
+      alert("Could not retrieve problem types.");
+      return [];
+    });
+}
+
+export async function getSolver(problemTypeId: string, solverId: string): Promise<ProblemSolverInfo | undefined> {
   const solvers = await fetchSolvers(problemTypeId);
-  return solvers.find(solverMatch);
+  return solvers.find(s => s.id === solverId);
 }
 
 export async function fetchProblem<T>(

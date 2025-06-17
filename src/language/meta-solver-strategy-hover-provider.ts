@@ -2,10 +2,9 @@ import { MultilineCommentHoverProvider } from "langium/lsp";
 import { AstNode, LangiumDocument, MaybePromise, CstUtils, GrammarAST, } from "langium";
 import { Hover, type HoverParams } from "vscode-languageserver";
 import { ProblemArrayName, ProblemName, ProblemType, SolverID, SolverSetting } from "./generated/ast.js";
-import { getProblemTypeByName } from "../api/ToolboxAPI.js";
+import { getProblemType } from "../api/ToolboxAPI.js";
 import { getProblemTypeByProblemName, getProblemTypeBySolverId } from "./utils/ast-utils.js";
 import * as api from "../api/ToolboxAPI.ts";
-import { getSimpleSolverName } from "./utils/solver-utils.js";
 
 export class MetaSolverStrategyHoverProvider extends MultilineCommentHoverProvider {
     protected override getKeywordHoverContent(node: AstNode): MaybePromise<Hover | undefined> {
@@ -44,12 +43,12 @@ export class MetaSolverStrategyHoverProvider extends MultilineCommentHoverProvid
         switch (node.$type) {
             case ProblemType: {
                 const problemType: ProblemType = node as ProblemType;
-                const type = getProblemTypeByName(problemType.problemType);
+                const type = getProblemType(problemType.problemType);
                 if (type) {
                     return {
                         contents: {
                             kind: 'markdown',
-                            value: `**Problem Type: ${type.name}**\n\n
+                            value: `**Problem Type: ${type.id}**\n\n
 ${type.description}`
                         }
                     };
@@ -62,14 +61,14 @@ ${type.description}`
                 if (!problemType) break;
 
                 const solvers = await api.fetchSolvers(problemType.id);
-                const solver = solvers.find(s => getSimpleSolverName(s) === solverId.solverId);
+                const solver = solvers.find(s => s.id === solverId.solverId);
                 if (!solver) break;
 
                 if (problemType) {
                     return {
                         contents: {
                             kind: 'markdown',
-                            value: `**Solver for ${problemType.name}**\n\n
+                            value: `**Solver for ${problemType.id}**\n\n
 ${solver.description}`
                         }
                     }
@@ -85,7 +84,7 @@ ${solver.description}`
                 const problemType = getProblemTypeBySolverId(solverId);
                 if (!problemType) break;
 
-                const solver = await api.getSolverById(problemType.id, (solver) => getSimpleSolverName(solver)  == solverId.solverId);
+                const solver = await api.getSolver(problemType.id, solverId.solverId);
                 if (!solver) break;
 
                 const solverSettings = await api.fetchSolverSettings(problemType.id, solver.id);
@@ -110,13 +109,13 @@ ${setting.description}`
         switch (node.$type) {
             case ProblemArrayName: {
                 const problemArrayName: ProblemArrayName = node as ProblemArrayName;
-                const problemTypeName = problemArrayName.$container.problemTypes?.problemType.problemType;
-                const problemType = getProblemTypeByName(problemTypeName);
+                const problemTypeId = problemArrayName.$container.problemTypes?.problemType.problemType;
+                const problemType = getProblemType(problemTypeId);
                 if (problemType) {
                     return {
                         contents: {
                             kind: 'markdown',
-                            value: `**Array of Problem Type: ${problemType.name}**\n\n
+                            value: `**Array of Problem Type: ${problemType.id}**\n\n
 ${problemType.description}`
                         }
                     };
@@ -130,7 +129,7 @@ ${problemType.description}`
                     return {
                         contents: {
                             kind: 'markdown',
-                            value: `**Instance of Problem Type: ${problemType.name}**\n\n
+                            value: `**Instance of Problem Type: ${problemType.id}**\n\n
 ${problemType.description}`
                         }
                     };

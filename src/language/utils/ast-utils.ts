@@ -7,10 +7,10 @@ export function getProblemTypeByProblemName(problemName: ProblemName): api.Probl
 
     if (definitionContainer.$type === SolveProblem) {
         const solveProblem: SolveProblem = definitionContainer as SolveProblem;
-        return api.getProblemTypeByName(solveProblem.problemType?.problemType);
+        return api.getProblemType(solveProblem.problemType?.problemType);
     } else if (definitionContainer.$type === Foreach) {
         const foreach: Foreach = definitionContainer as Foreach;
-        return api.getProblemTypeByName(foreach.collection.ref?.$container.problemTypes?.problemType.problemType);
+        return api.getProblemType(foreach.collection.ref?.$container.problemTypes?.problemType.problemType);
     }
 
     return undefined;
