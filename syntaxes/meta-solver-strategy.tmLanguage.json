@@ -1,0 +1,83 @@
+{
+  "name": "meta-solver-strategy",
+  "scopeName": "source.meta-solver-strategy",
+  "fileTypes": [
+    ".mss"
+  ],
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "name": "keyword.control.meta-solver-strategy",
+      "match": "\\b(else|foreach|if|in|solve)\\b"
+    },
+    {
+      "name": "string.quoted.double.meta-solver-strategy",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "include": "#string-character-escape"
+        }
+      ]
+    },
+    {
+      "name": "string.quoted.single.meta-solver-strategy",
+      "begin": "'",
+      "end": "'",
+      "patterns": [
+        {
+          "include": "#string-character-escape"
+        }
+      ]
+    },
+    {
+      "name": "variable.meta-solver-strategy",
+      "match": "[a-z][\\w_]*"
+    },
+    {
+      "name": "entity.name.function.meta-solver-strategy",
+      "match": "[_a-zA-Z][\\w_]*\\("
+    },
+    {
+      "name": "entity.name.type.meta-solver-strategy",
+      "match": "[_a-zA-Z][\\w_]*"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.block.meta-solver-strategy",
+          "begin": "/\\*",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.comment.meta-solver-strategy"
+            }
+          },
+          "end": "\\*/",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.comment.meta-solver-strategy"
+            }
+          }
+        },
+        {
+          "begin": "//",
+          "beginCaptures": {
+            "1": {
+              "name": "punctuation.whitespace.comment.leading.meta-solver-strategy"
+            }
+          },
+          "end": "(?=$)",
+          "name": "comment.line.meta-solver-strategy"
+        }
+      ]
+    },
+    "string-character-escape": {
+      "name": "constant.character.escape.meta-solver-strategy",
+      "match": "\\\\(x[0-9A-Fa-f]{2}|u[0-9A-Fa-f]{4}|u\\{[0-9A-Fa-f]+\\}|[0-2][0-7]{0,2}|3[0-6][0-7]?|37[0-7]?|[4-7][0-7]?|.|$)"
+    }
+  }
+}

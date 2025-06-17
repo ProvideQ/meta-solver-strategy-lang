@@ -1,7 +1,8 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # langium
-syntaxes/
+#syntaxes/ // not ignored because we customize the text mate syntax for advanced syntax highlighting
+*.monarch.ts
 out/
 src/language/generated/
 
