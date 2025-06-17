@@ -21,10 +21,13 @@ export function getProblemType(problemId: string | undefined): ProblemType | und
 }
 
 export async function initialize() {
-  let x = await getProblemTypes();
-  console.log("Problem Types:", x);
-  problemTypes.push(...x);
-  console.log("Initialized problem types:", problemTypes);
+  if (problemTypes.length > 0) {
+    // Already initialized
+    return;
+  }
+
+  let newTypes = await getProblemTypes();
+  problemTypes.push(...newTypes);
 }
 
 export async function getProblemTypes(): Promise<ProblemType[]> {
@@ -34,10 +37,7 @@ export async function getProblemTypes(): Promise<ProblemType[]> {
       "Content-Type": "application/json",
     },
   })
-    .then(async (response) => {
-      let x = await response.json()
-      console.log(x)
-      return x})
+    .then(response => response.json())
     .then((json) => json as ProblemType[])
     .catch((reason) => {
       console.error(reason);

@@ -8,7 +8,8 @@ import { getProblemTypeByProblemName } from "./utils/ast-utils.js";
 
 export class MetaSolverStrategyCompletionsProvider extends DefaultCompletionProvider {
     protected override async completionFor(context: CompletionContext, next: NextFeature, acceptor: CompletionAcceptor): Promise<void> {
-        console.log("TEST CompletionProvider", context, next, acceptor);
+        if  (context.node === undefined) return;
+
         switch (next.type) {
             case ProblemType:
                 for (const problemType of problemTypes) {
@@ -66,7 +67,6 @@ ${subRoutines.map((subRoutine) => `\tsolve ${api.getProblemType(subRoutine.typeI
     }
 
     protected override async completionForKeyword(context: CompletionContext, keyword: GrammarAST.Keyword, acceptor: CompletionAcceptor): Promise<void> {
-        console.log("TEST CompletionProvider keyword", context, keyword, acceptor);
         if (keyword.value === "if") {
             acceptor(context, {
                 label: "if",

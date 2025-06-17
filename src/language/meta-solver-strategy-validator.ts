@@ -26,16 +26,17 @@ export class MetaSolverStrategyValidator {
     async checkProblemTypeExists(problemType: ProblemType, accept: ValidationAcceptor): Promise<void> {
         await api.initialize(); // Ensure problem types are initialized before checking
         if (problemType.problemType) {
-            const type = await api.getProblemType(problemType.problemType);
+            const type = api.getProblemType(problemType.problemType);
             if (type === undefined) {
                 accept('error', `Problem type '${problemType.problemType}' does not exist.`, { node: problemType, property: "problemType" }); 
             }
         }
     }
-
+    
     async checkProblemTypesExists(problemTypes: ProblemTypes, accept: ValidationAcceptor): Promise<void> {
+        await api.initialize(); // Ensure problem types are initialized before checking
         if (problemTypes.problemType) {
-            const type = await api.getProblemType(problemTypes.problemType.problemType);
+            const type = api.getProblemType(problemTypes.problemType.problemType);
             if (type === undefined) {
                 accept('error', `Problem type '${problemTypes.problemType.problemType}' does not exist.`, { node: problemTypes, property: "problemType" }); 
             }

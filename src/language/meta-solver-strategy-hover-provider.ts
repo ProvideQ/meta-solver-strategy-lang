@@ -7,11 +7,6 @@ import { getProblemTypeByProblemName, getProblemTypeBySolverId } from "./utils/a
 import * as api from "../api/ToolboxAPI.ts";
 
 export class MetaSolverStrategyHoverProvider extends MultilineCommentHoverProvider {
-    protected override getKeywordHoverContent(node: AstNode): MaybePromise<Hover | undefined> {
-        console.log("TEST HoverProvider keyword", node);
-        return super.getKeywordHoverContent(node);
-    }
-
     public override async getHoverContent(document: LangiumDocument, params: HoverParams): Promise<Hover | undefined> {
         // Copied original implementation from AstNodeHoverProvider
         const rootNode = document.parseResult?.value?.$cstNode;
@@ -105,7 +100,6 @@ ${setting.description}`
     }
 
     protected override getAstNodeHoverContent(node: AstNode): MaybePromise<Hover | undefined> {
-        console.log("TEST HoverProvider astNode", node);
         switch (node.$type) {
             case ProblemArrayName: {
                 const problemArrayName: ProblemArrayName = node as ProblemArrayName;
