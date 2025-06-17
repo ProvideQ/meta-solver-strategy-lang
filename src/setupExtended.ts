@@ -20,7 +20,7 @@ export const setupConfigExtended = (): UserConfig => {
           solve TSP[] tsps:
             foreach tsp in tsps:
               tsp.QuboTspSolver():
-                solve Qubo qubo:
+                solve QUBO qubo:
                   qubo.DwaveQuboSolver(
                     "D-Wave Token" = "token",
                     "Annealing Method" = "sim")
