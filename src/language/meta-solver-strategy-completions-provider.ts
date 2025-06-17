@@ -1,10 +1,10 @@
 import { CompletionAcceptor, CompletionContext, DefaultCompletionProvider, NextFeature } from "langium/lsp";
 import { CompletionItemKind } from "vscode-languageserver";
-import { ProblemAttributeInt, ProblemType, Solver, SolverID, } from "./generated/ast.js";
+import { ProblemAttributeInt, ProblemType, SolverID, } from "./generated/ast.js";
 import { GrammarAST } from "langium";
 import { problemTypes } from "../api/ToolboxAPI.ts";
 import * as api from "../api/ToolboxAPI.ts";
-import { getProblemTypeByProblemName } from "./utils/ast-utils.js";
+import { getProblemTypeBySolverId, getProblemTypeNode, getSolverIdNode } from "./utils/ast-utils.js";
 
 export class MetaSolverStrategyCompletionsProvider extends DefaultCompletionProvider {
     protected override async completionFor(context: CompletionContext, next: NextFeature, acceptor: CompletionAcceptor): Promise<void> {
@@ -12,25 +12,31 @@ export class MetaSolverStrategyCompletionsProvider extends DefaultCompletionProv
 
         switch (next.type) {
             case ProblemType:
+                var problemTypeNode = getProblemTypeNode(context.node);
+
                 for (const problemType of problemTypes) {
                     acceptor(context, {
                         label: problemType.id,
+                        textEdit: {
+                            range: problemTypeNode!.$cstNode!.range,
+                            newText: problemType.id,
+                        },
                         kind: CompletionItemKind.EnumMember,
                     })
                 }
                 break;
             case SolverID:
-                const solver: Solver = context.node as Solver;
-                if (solver.problemName.ref === undefined) return;
-                
-                const problemType = getProblemTypeByProblemName(solver.problemName.ref);
+                const solverId = getSolverIdNode(context.node);
+                if (solverId === undefined) return;
+
+                const problemType = getProblemTypeBySolverId(solverId);
                 if (problemType === undefined) return;
-                
+
                 const solvers = await api.fetchSolvers(problemType.id);
                 for (const solver of solvers) {
                     const subRoutines = await api.fetchSubRoutines(problemType.id, solver.id);
                     const settings = await api.fetchSolverSettings(problemType.id, solver.id);
-                    
+
                     let snippetJumpIndex = 1;
 
                     let insertText = `${solver.id}()`;
@@ -50,7 +56,10 @@ ${subRoutines.map((subRoutine) => `\tsolve ${api.getProblemType(subRoutine.typeI
                         kind: CompletionItemKind.Function,
                         documentation: solver.description,
                         insertTextFormat: 2,
-                        insertText: insertText,
+                        textEdit: {
+                            range: solverId.$cstNode!.range,
+                            newText: insertText,
+                        },
                     })
                 }
                 break;
@@ -58,6 +67,10 @@ ${subRoutines.map((subRoutine) => `\tsolve ${api.getProblemType(subRoutine.typeI
                 acceptor(context, {
                     label: "size",
                     kind: CompletionItemKind.Property,
+                    textEdit: {
+                        range: context.node!.$cstNode!.range,
+                        newText: "size",
+                    },
                 })
                 break
             default:
