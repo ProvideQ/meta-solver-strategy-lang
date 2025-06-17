@@ -8,16 +8,16 @@ entry SolveProblem:
         solve=SolveMany);
 
 ProblemType:
-    problemType=ID; // TODO: enforce type is a valid problem type from a list of given problem types
+    problemType=ID;
 
 ProblemTypes:
     problemType=ProblemType "[]";
 
 ProblemName:
-    name=NAME; // TOOD: make sure problem name is only used once in file/scope
+    name=NAME;
 
 ProblemArrayName:
-    name=NAME; // TOOD: make sure problem name is only used once in file/scope
+    name=NAME;
 
 ProblemAttribute:
     ProblemAttributeInt;
@@ -82,14 +82,14 @@ ComparisonOperatorString:
     | notEqual="!=";
 
 Solver:
-    problemName=[ProblemName:NAME] "." solverId=SolverID "(" (settings+=SolverSetting ("," settings+=SolverSetting)* )? ")" // TODO: Add arguments which includes solver settings
+    problemName=[ProblemName:NAME] "." solverId=SolverID "(" (settings+=SolverSetting ("," settings+=SolverSetting)* )? ")"
         SubRoutines?;
 
 SolverSetting:
     settingName=STRING "=" settingValue=STRING;
 
 SolverID:
-    solverId=ID; // TODO: enforce solverId is a valid solver id from a list of given solver ids
+    solverId=ID;
 
 SubRoutines:
     ":"
