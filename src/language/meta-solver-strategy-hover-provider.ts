@@ -109,7 +109,7 @@ ${setting.description}`
                     return {
                         contents: {
                             kind: 'markdown',
-                            value: `**Array of Problem Type: ${problemType.id}**\n\n
+                            value: `**Array of Instances of Problem Type: ${problemType.id}**\n\n
 ${problemType.description}`
                         }
                     };
