@@ -12,17 +12,22 @@ export class MetaSolverStrategyCompletionsProvider extends DefaultCompletionProv
 
         switch (next.type) {
             case ProblemType:
-                var problemTypeNode = getProblemTypeNode(context.node);
+                const problemTypeNode = getProblemTypeNode(context.node);
 
                 for (const problemType of problemTypes) {
-                    acceptor(context, {
+                    const value : CompletionValueItem = {
                         label: problemType.id,
-                        textEdit: {
+                        kind: CompletionItemKind.EnumMember,
+                    };
+                    if (problemTypeNode) {
+                        value.textEdit = {
                             range: problemTypeNode!.$cstNode!.range,
                             newText: problemType.id,
-                        },
-                        kind: CompletionItemKind.EnumMember,
-                    })
+                        };
+                    } else {
+                        value.insertText = problemType.id;
+                    }
+                    acceptor(context, value)
                 }
                 break;
             case SolverID:
@@ -71,10 +76,7 @@ ${subRoutines.map((subRoutine) => `\tsolve ${api.getProblemType(subRoutine.typeI
                 acceptor(context, {
                     label: "size",
                     kind: CompletionItemKind.Property,
-                    textEdit: {
-                        range: context.node!.$cstNode!.range,
-                        newText: "size",
-                    },
+                    insertText: "size",
                 })
                 break
             default:

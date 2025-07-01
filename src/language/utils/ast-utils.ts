@@ -63,8 +63,7 @@ export function getProblemTypeNode(astNode: AstNode): ProblemType | undefined {
         const solveProblem: SolveProblem = astNode as SolveProblem;
         if (solveProblem.problemType) {
             return solveProblem.problemType;
-        }
-        else {
+        } else {
             return solveProblem.problemTypes?.problemType
         }
     }
