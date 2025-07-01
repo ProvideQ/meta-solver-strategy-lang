@@ -4,10 +4,6 @@
         "id": "meta-solver-strategy",
         "grammar": "src/language/meta-solver-strategy.langium",
         "fileExtensions": [".mss"],
-        // don't overwrite text mate syntax because we customize it for advanced syntax highlighting
-        // "textMate": {
-        //     "out": "syntaxes/meta-solver-strategy.tmLanguage.json"
-        // },
         "monarch": {
             "out": "src/syntaxes/meta-solver-strategy.monarch.ts"
         }
