@@ -66,7 +66,7 @@ ComparisonOperator returns string:
 
 Solver:
     problemName=[ProblemName:NAME] "." solverId=SolverID "(" (settings+=SolverSetting ("," settings+=SolverSetting)* )? ")"
-        SubRoutines?;
+        subRoutines=SubRoutines?;
 
 SolverSetting:
     settingName=STRING "=" settingValue=STRING;

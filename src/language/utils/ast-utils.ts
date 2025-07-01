@@ -39,7 +39,7 @@ export function getProblemType(astNode: AstNode): ProblemTypeDto | undefined {
         }
     } else if (astNode.$type === SubRoutines) {
         const subRoutines: SubRoutines = astNode as SubRoutines;
-        return getProblemTypeBySolverId(subRoutines.solverId);
+        return getProblemTypeBySolverId(subRoutines.$container.solverId);
     } else if (astNode.$type === Expression) {
         const expression: Expression = astNode as Expression;
         const problemName = expression.problemName?.ref;
@@ -58,7 +58,7 @@ export function getSolverIdNode(astNode: AstNode): SolverID | undefined {
         return solver.solverId;
     } else if (astNode.$type === SubRoutines) {
         const subRoutines: SubRoutines = astNode as SubRoutines;
-        return subRoutines.solverId;
+        return subRoutines.$container.solverId;
     }
     return undefined;
 }

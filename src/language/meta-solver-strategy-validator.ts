@@ -1,5 +1,5 @@
 import { type ValidationAcceptor, type ValidationChecks } from 'langium';
-import { BoolExpression, MetaSolverStrategyAstType, ProblemAttribute, ProblemType, ProblemTypes, SolverID, SolverSetting } from './generated/ast.js';
+import { BoolExpression, MetaSolverStrategyAstType, ProblemAttribute, ProblemType, ProblemTypes, SolverID, SolverSetting, SubRoutines } from './generated/ast.js';
 import type { MetaSolverStrategyServices } from './meta-solver-strategy-module.js';
 import * as api from "../api/ToolboxAPI.ts";
 import { getApplicableTypes, getProblemTypeByProblemName, getProblemTypeBySolverId, getType } from './utils/ast-utils.ts';
@@ -17,6 +17,7 @@ export function registerValidationChecks(services: MetaSolverStrategyServices) {
         SolverSetting: validator.checkSolverSettingExists,
         ProblemAttribute: validator.checkProblemAttributeExists,
         BoolExpression: validator.checkBoolExpressionTypes,
+        SubRoutines: validator.checkSubRoutines,
     };
     registry.register(checks, validator);
 }
@@ -115,6 +116,53 @@ export class MetaSolverStrategyValidator {
 
             if (rhsType && !applicableTypes.includes(rhsType)) {
                 accept('error', errorMessage(rhsType), { node: boolExpression, property: "rhs" });
+            }
+        }
+    }
+
+    async checkSubRoutines(subRoutines: SubRoutines, accept: ValidationAcceptor): Promise<void> {
+        await api.initialize(); // Ensure problem types are initialized before checking
+
+        const solverId = subRoutines.$container.solverId.solverId;
+        const problemTypeId = getProblemTypeBySolverId(subRoutines.$container.solverId);
+        if (!problemTypeId) {
+            accept('error', `Solver ID '${solverId}' is not associated with any problem type.`, { node: subRoutines.$container.solverId, property: "solverId" });
+            return;
+        }
+
+        const solverSubRoutines = await api.fetchSubRoutines(problemTypeId.id, solverId);
+
+        for (let subRoutine of subRoutines.subRoutine) {
+            if (subRoutine.problemType) {
+                const routine = solverSubRoutines.find(r => r.typeId === subRoutine.problemType?.problemType);
+                if (routine) {
+                    if (!routine.isCalledOnlyOnce) {
+                        accept('error', `Subroutine for problem type '${subRoutine.problemType.problemType}' can be called multiple times and should use an array of problem types ${routine.typeId}[].`, {
+                            node: subRoutine,
+                            property: "problemType"
+                        });
+                    }
+                } else {
+                    accept('error', `Subroutine for problem type '${subRoutine.problemType.problemType}' does not exist for solver '${solverId}'.`, {
+                        node: subRoutine,
+                        property: "problemType"
+                    });
+                }
+            } else if (subRoutine.problemTypes) {
+                const routine = solverSubRoutines.find(r => r.typeId === subRoutine.problemTypes?.problemType.problemType);
+                if (routine) {
+                    if (routine.isCalledOnlyOnce) {
+                        accept('error', `Subroutine for problem types '${subRoutine.problemTypes.problemType.problemType}' can only be called once and should not use an array of problem types.`, {
+                            node: subRoutine,
+                            property: "problemTypes"
+                        });
+                    }
+                } else {
+                    accept('error', `Subroutine for problem types '${subRoutine.problemTypes.problemType.problemType}' does not exist for solver '${solverId}'.`, {
+                        node: subRoutine,
+                        property: "problemTypes"
+                    });
+                }
             }
         }
     }
