@@ -20,13 +20,16 @@ ProblemArrayName:
     name=NAME;
 
 ProblemAttribute:
-    ProblemAttributeInt;
+    name=NAME;
 
-ProblemAttributeInt:
-    size=NAME; // TODO: only allow attributes that are valid for the problem type
+BoolExpression:
+    "true" | "false"
+    | lhs=Expression operator=ComparisonOperator rhs=Expression;
 
-// ProblemAttributeString:
-//     size="size"; // TODO: only allow attributes that are valid for the problem type
+Expression:
+    INT
+    | STRING
+    | problemName=[ProblemName:NAME] "." attribute=ProblemAttribute;
 
 Solve:
     If
@@ -40,45 +43,25 @@ Foreach:
         solve=Solve;
 
 If:
-    "if" condition+=Condition ":"
+    "if" condition+=BoolExpression ":"
         solve+=Solve
     Else;
 
 Else:
     "else"
-     ( "if" condition+=Condition ":"
+     ( "if" condition+=BoolExpression ":"
             solve+=Solve
         Else
     // We always want to handle the else case to make sure a problem is always solved somehow
      |  ":"
             solve+=Solve);
 
-Condition:
-    Comparison;
-// | Comparison "&&" Comparison // TODO: add support for logical operators
-// | Comparison "||" Comparison
-// | "(" condition=Condition ")";
-
-Comparison:
-    ComparisonInteger
-    | ComparisonString;
-
-ComparisonInteger:
-    problemName=[ProblemName:NAME] "." attribute=ProblemAttributeInt operator=ComparisonOperatorInteger value=INT; // TODO: make sure types match
-
-ComparisonString:
-    problemName=[ProblemName:NAME] "." attribute=ProblemAttributeInt operator=ComparisonOperatorString value=STRING; // TODO: make sure types match
-
-ComparisonOperatorInteger:
+ComparisonOperator:
     less="<"
     | lessOrEqual="<="
     | greater=">"
     | greaterOrEqual=">="
     | equal="=="
-    | notEqual="!=";
-
-ComparisonOperatorString:
-    equal="=="
     | notEqual="!=";
 
 Solver:

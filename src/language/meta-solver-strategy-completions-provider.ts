@@ -1,6 +1,6 @@
 import { CompletionAcceptor, CompletionContext, CompletionValueItem, DefaultCompletionProvider, NextFeature } from "langium/lsp";
 import { CompletionItemKind } from "vscode-languageserver";
-import { ProblemAttributeInt, ProblemType, SolverID, } from "./generated/ast.js";
+import { Expression, ProblemAttribute, ProblemType, SolverID, } from "./generated/ast.js";
 import { GrammarAST } from "langium";
 import { problemTypes } from "../api/ToolboxAPI.ts";
 import * as api from "../api/ToolboxAPI.ts";
@@ -77,13 +77,30 @@ export class MetaSolverStrategyCompletionsProvider extends DefaultCompletionProv
                     acceptor(context, value)
                 }
                 break;
-            case ProblemAttributeInt:
-                acceptor(context, {
-                    label: "size",
-                    kind: CompletionItemKind.Property,
-                    insertText: "size",
-                })
-                break
+            case ProblemAttribute: {
+                const problemType = getProblemType(context.node);
+                if (problemType === undefined) return;
+
+                const expression = context.node as Expression;
+                const range = expression.attribute?.$cstNode?.range;
+
+                for (let attribute of problemType.attributes) {
+                    const value: CompletionValueItem = {
+                        label: attribute,
+                        kind: CompletionItemKind.Property,
+                    };
+                    if (range) {
+                        value.textEdit = {
+                            range: range,
+                            newText: attribute,
+                        };
+                    } else {
+                        value.insertText = attribute;
+                    }
+                    acceptor(context, value)
+                }
+                break;
+            }
             default:
                 await super.completionFor(context, next, acceptor);
                 break
