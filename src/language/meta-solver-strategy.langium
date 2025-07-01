@@ -27,8 +27,8 @@ BoolExpression:
     | lhs=Expression operator=ComparisonOperator rhs=Expression;
 
 Expression:
-    INT
-    | STRING
+    int=INT
+    | string=STRING
     | problemName=[ProblemName:NAME] "." attribute=ProblemAttribute;
 
 Solve:
@@ -56,13 +56,13 @@ Else:
      |  ":"
             solve+=Solve);
 
-ComparisonOperator:
-    less="<"
-    | lessOrEqual="<="
-    | greater=">"
-    | greaterOrEqual=">="
-    | equal="=="
-    | notEqual="!=";
+ComparisonOperator returns string:
+    "<"
+    | "<="
+    | ">"
+    | ">="
+    | "=="
+    | "!=";
 
 Solver:
     problemName=[ProblemName:NAME] "." solverId=SolverID "(" (settings+=SolverSetting ("," settings+=SolverSetting)* )? ")"

@@ -1,8 +1,8 @@
-import type { ValidationAcceptor, ValidationChecks } from 'langium';
-import { MetaSolverStrategyAstType, ProblemAttribute, ProblemType, ProblemTypes, SolverID, SolverSetting } from './generated/ast.js';
+import { type ValidationAcceptor, type ValidationChecks } from 'langium';
+import { BoolExpression, MetaSolverStrategyAstType, ProblemAttribute, ProblemType, ProblemTypes, SolverID, SolverSetting } from './generated/ast.js';
 import type { MetaSolverStrategyServices } from './meta-solver-strategy-module.js';
 import * as api from "../api/ToolboxAPI.ts";
-import { getProblemTypeByProblemName, getProblemTypeBySolverId } from './utils/ast-utils.ts';
+import { getApplicableTypes, getProblemTypeByProblemName, getProblemTypeBySolverId, getType } from './utils/ast-utils.ts';
 
 /**
  * Register custom validation checks.
@@ -16,6 +16,7 @@ export function registerValidationChecks(services: MetaSolverStrategyServices) {
         SolverID: validator.checkSolverIDExists,
         SolverSetting: validator.checkSolverSettingExists,
         ProblemAttribute: validator.checkProblemAttributeExists,
+        BoolExpression: validator.checkBoolExpressionTypes,
     };
     registry.register(checks, validator);
 }
@@ -92,8 +93,29 @@ export class MetaSolverStrategyValidator {
             return;
         }
 
-        if (!problemTypeId.attributes.find(a => a === problemAttribute.name)) {
+        if (!problemTypeId.attributes.includes(problemAttribute.name)) {
             accept('error', `Problem attribute '${problemAttribute.name}' does not exist for problem type '${problemTypeId.id}'.`, { node: problemAttribute, property: "name" });
+        }
+    }
+
+    async checkBoolExpressionTypes(boolExpression: BoolExpression, accept: ValidationAcceptor): Promise<void> {
+        await api.initialize(); // Ensure problem types are initialized before checking
+
+        if (boolExpression.operator && boolExpression.lhs && boolExpression.rhs) {
+            const applicableTypes = getApplicableTypes(boolExpression.operator);
+
+            const lhsType = getType(boolExpression.lhs);
+            const rhsType = getType(boolExpression.rhs);
+            
+            const errorMessage = (expressionType: string) => `Expression has type '${expressionType}' but comparison operator '${boolExpression.operator}' is only applicable to ${applicableTypes.map(x => "'" + x + "'").join(' or ')}.`;
+
+            if (lhsType && !applicableTypes.includes(lhsType)) {
+                accept('error', errorMessage(lhsType), { node: boolExpression, property: "lhs" });
+            }
+
+            if (rhsType && !applicableTypes.includes(rhsType)) {
+                accept('error', errorMessage(rhsType), { node: boolExpression, property: "rhs" });
+            }
         }
     }
 

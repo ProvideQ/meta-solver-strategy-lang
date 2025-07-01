@@ -1,4 +1,4 @@
-import { Expression, Foreach, ProblemName, ProblemType, SolveProblem, Solver, SolverID, SubRoutines } from "../generated/ast.js";
+import { ComparisonOperator, Expression, Foreach, ProblemName, ProblemType, SolveProblem, Solver, SolverID, SubRoutines } from "../generated/ast.js";
 import * as api from "../../api/ToolboxAPI.js";
 import { AstNode } from "langium";
 import { ProblemTypeDto } from "../../api/data-model/ProblemTypeDto.js";
@@ -75,4 +75,28 @@ export function getProblemTypeNode(astNode: AstNode): ProblemType | undefined {
         }
     }
     return undefined;
+}
+
+export function getType(expression: Expression): string | undefined {
+    if (expression.string) return "string";
+    if (expression.int) return "number";
+
+    return undefined;
+}
+
+export function getApplicableTypes(operator: ComparisonOperator): string[] {
+    switch (operator) {
+        case "==":
+            return ["string", "number"];
+        case "!=":
+            return ["string", "number"];
+        case "<":
+            return ["number"];
+        case "<=":
+            return ["number"];
+        case ">":
+            return ["number"];
+        case ">=":
+            return ["number"];
+    }
 }
