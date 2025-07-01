@@ -1,10 +1,10 @@
-import { CompletionAcceptor, CompletionContext, DefaultCompletionProvider, NextFeature } from "langium/lsp";
+import { CompletionAcceptor, CompletionContext, CompletionValueItem, DefaultCompletionProvider, NextFeature } from "langium/lsp";
 import { CompletionItemKind } from "vscode-languageserver";
 import { ProblemAttributeInt, ProblemType, SolverID, } from "./generated/ast.js";
 import { GrammarAST } from "langium";
 import { problemTypes } from "../api/ToolboxAPI.ts";
 import * as api from "../api/ToolboxAPI.ts";
-import { getProblemTypeBySolverId, getProblemTypeNode, getSolverIdNode } from "./utils/ast-utils.js";
+import { getProblemType, getProblemTypeNode, getSolverIdNode } from "./utils/ast-utils.js";
 
 export class MetaSolverStrategyCompletionsProvider extends DefaultCompletionProvider {
     protected override async completionFor(context: CompletionContext, next: NextFeature, acceptor: CompletionAcceptor): Promise<void> {
@@ -26,10 +26,7 @@ export class MetaSolverStrategyCompletionsProvider extends DefaultCompletionProv
                 }
                 break;
             case SolverID:
-                const solverId = getSolverIdNode(context.node);
-                if (solverId === undefined) return;
-
-                const problemType = getProblemTypeBySolverId(solverId);
+                const problemType = getProblemType(context.node);
                 if (problemType === undefined) return;
 
                 const solvers = await api.fetchSolvers(problemType.id);
@@ -51,16 +48,23 @@ ${subRoutines.map((subRoutine) => `\tsolve ${api.getProblemType(subRoutine.typeI
                         // TODO: add setting if subroutines can have multiple problems or just one problem to solve
                     }
 
-                    acceptor(context, {
+                    const solverId = getSolverIdNode(context.node);
+                    const value : CompletionValueItem = {
                         label: solver.id,
                         kind: CompletionItemKind.Function,
                         documentation: solver.description,
                         insertTextFormat: 2,
-                        textEdit: {
-                            range: solverId.$cstNode!.range,
+                    };
+                    if (solverId) {
+                        value.textEdit = {
+                            range: solverId?.$cstNode!.range ?? context.node!.$cstNode!.range,
                             newText: insertText,
-                        },
-                    })
+                        };
+                    } else {
+                        value.insertText = insertText;
+                    }
+
+                    acceptor(context, value)
                 }
                 break;
             case ProblemAttributeInt:

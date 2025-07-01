@@ -23,6 +23,26 @@ export function getProblemTypeBySolverId(solverId: SolverID): api.ProblemType | 
     return getProblemTypeByProblemName(solverId.$container.problemName.ref);
 }
 
+export function getProblemType(astNode: AstNode): api.ProblemType | undefined {
+    if (astNode.$type === SolverID) {
+        return getProblemTypeBySolverId(astNode as SolverID);
+    } else if (astNode.$type === Solver) {
+        const solver: Solver = astNode as Solver;
+        if (solver.solverId) {
+            return getProblemTypeBySolverId(solver.solverId);
+        } else {
+            const problemName = solver.problemName.ref;
+            if (problemName) {
+                return getProblemTypeByProblemName(problemName)
+            }
+        }
+    } else if (astNode.$type === SubRoutines) {
+        const subRoutines: SubRoutines = astNode as SubRoutines;
+        return getProblemTypeBySolverId(subRoutines.solverId);
+    }
+    return undefined;
+}
+
 export function getSolverIdNode(astNode: AstNode): SolverID | undefined {
     if (astNode.$type === SolverID) {
         return astNode as SolverID;
