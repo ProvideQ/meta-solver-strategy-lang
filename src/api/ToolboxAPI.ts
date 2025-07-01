@@ -31,7 +31,7 @@ export async function initialize() {
 }
 
 export async function getProblemTypes(): Promise<ProblemType[]> {
-  return fetch(`${baseUrl()}/problems`, {
+  return fetch(`${baseUrl()}/problem-types`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
