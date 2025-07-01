@@ -15,9 +15,7 @@ solve VRP vrp:
     vrp.QrispVrpSolver()
 ```
 
-## Guide
-
-### Solve Statements
+## Solve Statements
 ```
 solve VRP vrp:
   vrp.QrispVrpSolver()
@@ -30,7 +28,7 @@ This can be followed by a call to invoke a certain [problem solver](https://api.
 For more complex strategies, one might want to create branching instructions where the strategy decides varying solution paths based on the given problem instance and its characteristics.
 
 
-### Sub Routine Calls
+## Sub Routine Calls
 ```
 solve SAT sat:
   sat.QrispExactGroverSolver():
@@ -40,7 +38,7 @@ solve SAT sat:
 
 This is a problem where the solver call `sat.QrispExactGroverSolver()` doesn't end the strategy, because the solver `QrispExactGroverSolver` defines a sub routine to call a `SharpSAT` problem. This is syntactically represented with a `:` following the solver call, and another nested solve statement.
 
-### Solver Setting Configuration
+## Solver Setting Configuration
 
 ```
 solve QUBO qubo:
@@ -53,7 +51,7 @@ Some solvers also define certain settings which might need to be configured to w
 In the Meta Solver Strategy Language solver settings can be defined within the solve paratheses and passed as arguments.
 Each solver setting argument needs to specify the exact solver setting name on the left hand side and the value on the right hand side.
 
-### Branching Solver Strategies
+## Branching Solver Strategies
 
 ```
 solve VRP vrp:
@@ -76,7 +74,7 @@ For example, this `VRP` problem is solved with a standard solver if the problem 
 
 This enables users to create a vast amount of different Meta Solver Strategies built for various use cases.
 
-### Nested Meta Solver Strategy Calls (WIP)
+## Nested Meta Solver Strategy Calls (WIP)
 ```
 solve SharpSAT sharpsat:
   if sharpsat.variable_count > 100:
