@@ -3,20 +3,16 @@ import { ProblemSolverInfo } from "./data-model/ProblemSolverInfo.ts";
 import { ProblemState } from "./data-model/ProblemState.ts";
 import { SolverSetting } from "./data-model/SolverSettings.ts";
 import { SubRoutineDefinitionDto } from "./data-model/SubRoutineDefinitionDto.ts";
+import { ProblemTypeDto } from "./data-model/ProblemTypeDto.js";
 
 /**
  * Getter for the base url of the toolbox API.
  */
 export const baseUrl = () => import.meta.env.VITE_API_BASE_URL;
 
-export interface ProblemType {
-  id: string;
-  description?: string;
-}
+export const problemTypes : ProblemTypeDto[] = [];
 
-export const problemTypes : ProblemType[] = [];
-
-export function getProblemType(problemId: string | undefined): ProblemType | undefined {
+export function getProblemType(problemId: string | undefined): ProblemTypeDto | undefined {
   return problemTypes.find((problemType) => problemType.id === problemId);
 }
 
@@ -30,7 +26,7 @@ export async function initialize() {
   problemTypes.push(...newTypes);
 }
 
-export async function getProblemTypes(): Promise<ProblemType[]> {
+export async function getProblemTypes(): Promise<ProblemTypeDto[]> {
   return fetch(`${baseUrl()}/problem-types`, {
     method: "GET",
     headers: {
@@ -38,7 +34,7 @@ export async function getProblemTypes(): Promise<ProblemType[]> {
     },
   })
     .then(response => response.json())
-    .then((json) => json as ProblemType[])
+    .then((json) => json as ProblemTypeDto[])
     .catch((reason) => {
       console.error(reason);
       alert("Could not retrieve problem types.");

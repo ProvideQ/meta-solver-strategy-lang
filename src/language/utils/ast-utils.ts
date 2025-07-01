@@ -1,8 +1,9 @@
 import { Foreach, ProblemName, ProblemType, SolveProblem, Solver, SolverID, SubRoutines } from "../generated/ast.js";
 import * as api from "../../api/ToolboxAPI.js";
 import { AstNode } from "langium";
+import { ProblemTypeDto } from "../../api/data-model/ProblemTypeDto.js";
 
-export function getProblemTypeByProblemName(problemName: ProblemName): api.ProblemType | undefined {
+export function getProblemTypeByProblemName(problemName: ProblemName): ProblemTypeDto | undefined {
     const definitionContainer = problemName.$container;
     if (definitionContainer === undefined) return;
 
@@ -17,13 +18,13 @@ export function getProblemTypeByProblemName(problemName: ProblemName): api.Probl
     return undefined;
 }
 
-export function getProblemTypeBySolverId(solverId: SolverID): api.ProblemType | undefined {
+export function getProblemTypeBySolverId(solverId: SolverID): ProblemTypeDto | undefined {
     if (!solverId.$container.problemName?.ref) return undefined;
 
     return getProblemTypeByProblemName(solverId.$container.problemName.ref);
 }
 
-export function getProblemType(astNode: AstNode): api.ProblemType | undefined {
+export function getProblemType(astNode: AstNode): ProblemTypeDto | undefined {
     if (astNode.$type === SolverID) {
         return getProblemTypeBySolverId(astNode as SolverID);
     } else if (astNode.$type === Solver) {
