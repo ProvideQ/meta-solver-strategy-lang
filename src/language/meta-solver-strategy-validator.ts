@@ -1,5 +1,5 @@
 import { type ValidationAcceptor, type ValidationChecks } from 'langium';
-import { BoolExpression, MetaSolverStrategyAstType, ProblemAttribute, ProblemType, ProblemTypes, SolverID, SolverSetting, SubRoutines } from './generated/ast.js';
+import { BoolExpression, MetaSolverStrategyAstType, ProblemAttribute, ProblemType, ProblemTypes, SolveProblem, SolverID, SolverSetting, SubRoutines } from './generated/ast.js';
 import type { MetaSolverStrategyServices } from './meta-solver-strategy-module.js';
 import * as api from "../api/ToolboxAPI.ts";
 import { getApplicableTypes, getProblemTypeByProblemName, getProblemTypeBySolverId, getType } from './utils/ast-utils.ts';
@@ -18,6 +18,7 @@ export function registerValidationChecks(services: MetaSolverStrategyServices) {
         ProblemAttribute: validator.checkProblemAttributeExists,
         BoolExpression: validator.checkBoolExpressionTypes,
         SubRoutines: validator.checkSubRoutines,
+        SolveProblem: validator.checkSolveProblem,
     };
     registry.register(checks, validator);
 }
@@ -164,6 +165,17 @@ export class MetaSolverStrategyValidator {
                     });
                 }
             }
+        }
+    }
+
+    async checkSolveProblem(solveProblem: SolveProblem, accept: ValidationAcceptor): Promise<void> {
+        await api.initialize(); // Ensure problem types are initialized before checking
+
+        if (solveProblem.$container === undefined && solveProblem.problemTypes) {
+            accept('error', 'Root solve problem cannot solve an array of problem types. Use a single problem type instead.', {
+                node: solveProblem,
+                property: "problemTypes"
+            });
         }
     }
 
