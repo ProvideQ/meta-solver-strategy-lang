@@ -1,8 +1,8 @@
 import type { ValidationAcceptor, ValidationChecks } from 'langium';
-import { MetaSolverStrategyAstType, ProblemType, ProblemTypes, SolverID, SolverSetting } from './generated/ast.js';
+import { MetaSolverStrategyAstType, ProblemAttribute, ProblemType, ProblemTypes, SolverID, SolverSetting } from './generated/ast.js';
 import type { MetaSolverStrategyServices } from './meta-solver-strategy-module.js';
 import * as api from "../api/ToolboxAPI.ts";
-import { getProblemTypeBySolverId } from './utils/ast-utils.ts';
+import { getProblemTypeByProblemName, getProblemTypeBySolverId } from './utils/ast-utils.ts';
 
 /**
  * Register custom validation checks.
@@ -15,6 +15,7 @@ export function registerValidationChecks(services: MetaSolverStrategyServices) {
         ProblemTypes: validator.checkProblemTypesExists,
         SolverID: validator.checkSolverIDExists,
         SolverSetting: validator.checkSolverSettingExists,
+        ProblemAttribute: validator.checkProblemAttributeExists,
     };
     registry.register(checks, validator);
 }
@@ -73,6 +74,26 @@ export class MetaSolverStrategyValidator {
             if (settings.filter(setting => setting.name === solverSetting.settingName).length === 0) {
                 accept('error', `Solver setting '${solverSetting.settingName}' does not exist for solver '${solverId.solverId}'.`, { node: solverSetting, property: "settingName" });
             }
+        }
+    }
+
+    async checkProblemAttributeExists(problemAttribute: ProblemAttribute, accept: ValidationAcceptor): Promise<void> {
+        await api.initialize(); // Ensure problem types are initialized before checking
+
+        const problemName = problemAttribute.$container.problemName?.ref;
+        if (!problemName) {
+            accept('error', 'Problem name is required for problem attributes.', { node: problemAttribute.$container, property: "problemName" });
+            return;
+        }
+
+        const problemTypeId = getProblemTypeByProblemName(problemName);
+        if (!problemTypeId) {
+            accept('error', `Problem type for problem name '${problemName.name}' does not exist.`, { node: problemAttribute.$container, property: "problemName" });
+            return;
+        }
+
+        if (!problemTypeId.attributes.find(a => a === problemAttribute.name)) {
+            accept('error', `Problem attribute '${problemAttribute.name}' does not exist for problem type '${problemTypeId.id}'.`, { node: problemAttribute, property: "name" });
         }
     }
 
