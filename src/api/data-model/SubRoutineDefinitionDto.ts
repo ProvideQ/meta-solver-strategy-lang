@@ -12,4 +12,9 @@ export interface SubRoutineDefinitionDto {
    * Describes why this sub-routine is required to solve a bigger problem.
    */
   description: string;
+  /**
+   * Indicates whether this sub-routine is called only once when the solver
+   * solves a problem or whether it can be called multiple times.
+   */
+  isCalledOnlyOnce: boolean;
 }

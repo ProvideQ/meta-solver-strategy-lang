@@ -8,14 +8,14 @@ import { getProblemType, getProblemTypeNode, getSolverIdNode } from "./utils/ast
 
 export class MetaSolverStrategyCompletionsProvider extends DefaultCompletionProvider {
     protected override async completionFor(context: CompletionContext, next: NextFeature, acceptor: CompletionAcceptor): Promise<void> {
-        if  (context.node === undefined) return;
+        if (context.node === undefined) return;
 
         switch (next.type) {
             case ProblemType:
                 const problemTypeNode = getProblemTypeNode(context.node);
 
                 for (const problemType of problemTypes) {
-                    const value : CompletionValueItem = {
+                    const value: CompletionValueItem = {
                         label: problemType.id,
                         kind: CompletionItemKind.EnumMember,
                     };
@@ -48,13 +48,18 @@ export class MetaSolverStrategyCompletionsProvider extends DefaultCompletionProv
                     }
 
                     if (subRoutines.length > 0) {
-                        insertText = `${insertText}:
-${subRoutines.map((subRoutine) => `\tsolve ${api.getProblemType(subRoutine.typeId)?.id} ${api.getProblemType(subRoutine.typeId)?.id.toLowerCase()}:\n\t\t\${${snippetJumpIndex++}}`).join("\n")}`;
-                        // TODO: add setting if subroutines can have multiple problems or just one problem to solve
+                        insertText = `${insertText}:\n${subRoutines
+                            .map((subRoutine) => {
+                                const problemType = api.getProblemType(subRoutine.typeId)?.id;
+                                const problemTypeArray = subRoutine.isCalledOnlyOnce ? "" : "[]";
+                                const problemNameSuffix = subRoutine.isCalledOnlyOnce ? "" : "s";
+                                return `\tsolve ${problemType}${problemTypeArray} ${problemType?.toLowerCase() + problemNameSuffix}:\n\t\t\${${snippetJumpIndex++}}`;
+                            })
+                            .join("\n")}`;
                     }
 
                     const solverId = getSolverIdNode(context.node);
-                    const value : CompletionValueItem = {
+                    const value: CompletionValueItem = {
                         label: solver.id,
                         kind: CompletionItemKind.Function,
                         documentation: solver.description,
