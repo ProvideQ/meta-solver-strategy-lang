@@ -160,4 +160,20 @@ export class ToolboxApi {
                 };
             });
     }
+
+    async fetchProblemAttribute(problemTypeId: string, problemId: string, attributeName: string): Promise<any> {
+        return fetch(`${this.baseUrl}/problems/${problemTypeId}/${problemId}/attributes/${attributeName}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        })
+            .then((response) => response.json())
+            .catch((reason) => {
+                console.error(reason);
+                alert(`Could not retrieve attribute ${attributeName} of problem ${problemId}.`);
+                return undefined;
+            });
+
+    }
 }

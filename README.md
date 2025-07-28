@@ -1,4 +1,4 @@
-# Dev Setup
+# Editor Setup
 
 - Generate parser for the Langium grammar
 ```bash
@@ -8,6 +8,19 @@ yarn workspace langium-core langium:generate
 - Start the editor
 ```bash
 yarn workspace editor dev
+```
+
+# Interpreter Setup
+
+- Start the server
+```bash
+yarn workspace interpreter dev
+```
+
+- When you edit the endpoint, update the tsoa router and OpenAPI specs
+```bash
+yarn workspace interpreter tsoa routes
+yarn workspace interpreter tsoa spec
 ```
 
 # Meta Solver Strategy Language
