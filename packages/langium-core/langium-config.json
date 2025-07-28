@@ -1,0 +1,9 @@
+{
+    "projectName": "MetaSolverStrategy",
+    "languages": [{
+        "id": "meta-solver-strategy",
+        "grammar": "src/meta-solver-strategy.langium",
+        "fileExtensions": [".mss"]
+    }],
+    "out": "src/language/generated"
+}

@@ -22,8 +22,11 @@
         "noEmit": true
     },
     "include": [
-        "src/**/*.ts",
-        "test/**/*.ts"
+        "apps/*/src/**/*.ts",
+        "packages/*/src/**/*.ts",
+        "test/**/*.ts",
+        "packages/toolbox-api/src/index.ts",
+        "packages/langium-core/src/index.ts"
     ],
     "exclude": [
         "node_modules"

@@ -1,3 +1,15 @@
+# Dev Setup
+
+- Generate parser for the Langium grammar
+```bash
+yarn workspace langium-core langium:generate
+```
+
+- Start the editor
+```bash
+yarn workspace editor dev
+```
+
 # Meta Solver Strategy Language
 
 The Meta Solver Strategy Language is a DSL used for the ProvideQ Toolbox.

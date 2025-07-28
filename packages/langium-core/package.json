@@ -1,0 +1,16 @@
+{
+  "name": "langium-core",
+  "version": "1.0.0",
+  "private": true,
+  "main": "src/index.ts",
+  "scripts": {
+    "langium:generate": "langium generate",
+    "langium:generate:production": "langium generate --mode=production"
+  },
+  "dependencies": {
+    "langium": "~3.5.0",
+    "toolbox-api": "*"
+  },
+  "devDependencies": {},
+  "type": "module"
+}

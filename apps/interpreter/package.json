@@ -1,0 +1,19 @@
+{
+  "name": "interpreter",
+  "version": "1.0.0",
+  "private": true,
+  "main": "src/main.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "start": "vite preview",
+    "lint": "eslint src --ext ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "toolbox-api": "*",
+    "langium-core": "*"
+  },
+  "devDependencies": {}
+}
