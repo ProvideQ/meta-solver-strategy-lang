@@ -30,7 +30,7 @@ export class StrategyController extends Controller {
         @Body() body: MetaSolverStrategyInput
     ): Promise<MetaSolverStrategy> {
         const { problemTypeId, error } = await inferProblemTypeIdFromCode(body.code);
-        if (!problemTypeId) {
+        if (!problemTypeId || error) {
             this.setStatus(400);
             throw 'Code is not valid ' + error;
         }
@@ -52,7 +52,7 @@ export class StrategyController extends Controller {
         }
         if (body.code !== undefined) {
             const { problemTypeId, error } = await inferProblemTypeIdFromCode(body.code);
-            if (!problemTypeId) {
+            if (!problemTypeId || error) {
                 this.setStatus(400);
                 throw 'Code is not valid ' + error;
             }
