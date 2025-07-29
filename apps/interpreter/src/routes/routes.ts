@@ -23,29 +23,19 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "Pick_MetaSolverStrategyInput.Exclude_keyofMetaSolverStrategyInput.problemTypeId__": {
-        "dataType": "refAlias",
-        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"code":{"dataType":"string","required":true},"name":{"dataType":"string","required":true}},"validators":{}},
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "Omit_MetaSolverStrategyInput.problemTypeId_": {
-        "dataType": "refAlias",
-        "type": {"ref":"Pick_MetaSolverStrategyInput.Exclude_keyofMetaSolverStrategyInput.problemTypeId__","validators":{}},
+    "MetaSolverStrategyInput": {
+        "dataType": "refObject",
+        "properties": {
+            "code": {"dataType":"string","required":true},
+            "name": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "MetaSolverStrategyResponse": {
         "dataType": "refObject",
         "properties": {
             "id": {"dataType":"string","required":true},
-            "name": {"dataType":"string","required":true},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "MetaSolverStrategyInput": {
-        "dataType": "refObject",
-        "properties": {
-            "code": {"dataType":"string","required":true},
             "name": {"dataType":"string","required":true},
         },
         "additionalProperties": false,
@@ -86,7 +76,7 @@ export function RegisterRoutes(app: Router) {
 
     
         const argsStrategyController_saveStrategy: Record<string, TsoaRoute.ParameterSchema> = {
-                body: {"in":"body","name":"body","required":true,"ref":"Omit_MetaSolverStrategyInput.problemTypeId_"},
+                body: {"in":"body","name":"body","required":true,"ref":"MetaSolverStrategyInput"},
         };
         app.post('/strategies',
             ...(fetchMiddlewares<RequestHandler>(StrategyController)),
