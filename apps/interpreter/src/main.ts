@@ -8,7 +8,7 @@ const app = express();
 const port = 5000;
 
 app.use('/swagger.json', express.static('spec/swagger.json'));
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(undefined, { swaggerUrl: '/swagger.json' }));
+app.use('/', swaggerUi.serve, swaggerUi.setup(undefined, { swaggerUrl: '/swagger.json' }));
 app.use(bodyParser.json());
 RegisterRoutes(app);
 
