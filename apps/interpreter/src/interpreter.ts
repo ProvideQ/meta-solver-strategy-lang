@@ -1,6 +1,6 @@
 import { LangiumCoreServices, LangiumDocument, URI } from "langium";
 import { NodeFileSystem } from 'langium/node';
-import { BoolExpression, createMetaSolverStrategyServices, Expression, Foreach, If, ProblemArrayName, ProblemName, Solve, SolveProblem, Solver } from 'langium-core';
+import { BoolExpression, createMetaSolverStrategyServices, Else, Expression, Foreach, If, isIf, ProblemArrayName, ProblemName, Solve, SolveProblem, Solver } from 'langium-core';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 import { ProblemDto, ProblemState, SolverSetting as ApiSolverSetting } from "toolbox-api";
@@ -39,13 +39,18 @@ export async function solve(strategy: MetaSolverStrategy, problemId: string) {
         const node = result as SolveProblem;
         if (node.problemType && node.problemName.$type == ProblemName) {
             const problem = await toolboxApi.fetchProblem(node.problemType.problemType, problemId);
+            if (problem.error) {
+                return Promise.reject("Failed to fetch " + node.problemType.problemType + " problem " + problemId + ": " + problem.error);
+            }
 
-            visitSolveProblem(result as SolveProblem, [problem], {
+            return await visitSolveProblem(result as SolveProblem, [problem], {
                 variables: new Map<ProblemName, ProblemDto<any>>(),
                 arrays: new Map<ProblemArrayName, ProblemDto<any>[]>()
             });
         }
     }
+
+    return Promise.reject("Unsupported root node type: " + result.$type);
 }
 
 export interface MetaSolverStrategyContext {
@@ -60,7 +65,7 @@ export async function visitSolveProblem(node: SolveProblem, problems: ProblemDto
 
         if (node.solve.$type === Solver) {
             return await visitSolver(node.solve, context);
-        } else if (node.solve.$type === If) {
+        } else if (isIf(node.solve)) {
             return await visitIf(node.solve, context);
         }
     } else if (node.problemTypes && node.problemName.$type == ProblemArrayName) {
@@ -75,7 +80,7 @@ export async function visitSolveProblem(node: SolveProblem, problems: ProblemDto
 }
 
 export async function visitSolve(node: Solve, context: MetaSolverStrategyContext): Promise<ProblemDto<any> | undefined> {
-    if (node.$type === If) {
+    if (node.$type === If || node.$type === Else) {
         return await visitIf(node, context);
     } else if (node.$type === Solver) {
         return await visitSolver(node, context);
@@ -89,14 +94,14 @@ export async function visitSolver(node: Solver, context: MetaSolverStrategyConte
         return Promise.reject("Solver problem name is not defined");
     }
 
-    const problem = await context.variables.get(node.problemName.ref);
+    const problem = context.variables.get(node.problemName.ref);
     if (problem?.typeId === undefined) {
         return Promise.reject("Problem not found for solver: " + node.problemName.ref.name);
     }
 
     // Update solver, solver settings and start solving the problem
     const settings = await toolboxApi.fetchSolverSettings(problem.typeId, node.solverId.solverId);
-    const solution = await toolboxApi.patchProblem(problem?.typeId, problem?.id, {
+    let solution: ProblemDto<unknown> = await toolboxApi.patchProblem(problem?.typeId, problem?.id, {
         solverId: node.solverId.solverId,
         solverSettings: node.settings
         .map(setting => {
@@ -111,6 +116,10 @@ export async function visitSolver(node: Solver, context: MetaSolverStrategyConte
         .filter(setting => setting !== undefined),
         state: ProblemState.SOLVING,
     });
+
+    if (solution.error) {
+        solution = await toolboxApi.fetchProblem(problem.typeId, problem.id);
+    }
 
     // Run all subroutines for the problem
     if (node.subRoutines?.subRoutine) {
@@ -147,7 +156,7 @@ export async function visitIf(node: If, context: MetaSolverStrategyContext): Pro
     for (let i = 0; i < node.solve.length; i++) {
         const solve = node.solve[i];
 
-        if (node.condition.length <= i) {
+        if (i < node.condition.length) {
             const condition = node.condition[i];
 
             const conditionResult = await visitBoolExpression(condition, context);
@@ -169,8 +178,8 @@ export async function visitBoolExpression(node: BoolExpression, context: MetaSol
     } else if (node.$cstNode?.text === "false") {
         return false;
     } else if (node.lhs && node.operator && node.rhs) {
-        const lhs = visitExpression(node.lhs, context);
-        const rhs = visitExpression(node.rhs, context);
+        const lhs = await visitExpression(node.lhs, context);
+        const rhs = await visitExpression(node.rhs, context);
 
         switch (node.operator) {
             case "==":
@@ -230,13 +239,21 @@ export async function visitForeach(node: Foreach, context: MetaSolverStrategyCon
         throw new Error("Foreach collection "+ node.collection.ref.$cstNode?.text + " is not defined in context");
     }
 
-    // TODO: parallelize this
-    for (const problem of problemArray) {
-        context.variables.set(node.variable, problem);
-        await visitSolve(node.solve, context);
-    }
+    // Create a task for each problem in the array
+    const tasks = problemArray.map(problem => {
+        const branchContext: MetaSolverStrategyContext = {
+            // deep copy of the context for each branch
+            variables: new Map(context.variables),
+            arrays: new Map(context.arrays)
+        };
+        branchContext.variables.set(node.variable, problem);
+        return visitSolve(node.solve, branchContext);
+    });
 
-    // TODO
+    // Wait for all tasks to complete
+    await Promise.all(tasks);
+
+    // Foreach does not return a value
     return undefined;
 }
 
