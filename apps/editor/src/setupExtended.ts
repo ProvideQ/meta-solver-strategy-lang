@@ -13,7 +13,7 @@ export const setupConfigExtended = (): UserConfig => {
                 $type: 'extended',
                 languageId: 'meta-solver-strategy',
                 code: `solve VRP vrp:
-  if vrp.size > 10:
+  if vrp.dimension > 10:
     vrp.ClusterAndSolveVrpSolver():
       solve ClusterVRP clustervrp:
         clustervrp.TwoPhaseClusterer():
