@@ -1,4 +1,4 @@
-import { Controller, Route, Post, Get, Patch, Body, Path } from 'tsoa';
+import { Controller, Route, Post, Get, Patch, Body, Path, Query, Delete } from 'tsoa';
 import { v4 as uuidv4 } from 'uuid';
 import { solve, inferProblemTypeIdFromCode, MetaSolverStrategy } from '../interpreter.ts';
 
@@ -72,8 +72,20 @@ export class StrategyController extends Controller {
     }
 
     @Get()
-    public async listStrategies(): Promise<Array<MetaSolverStrategy>> {
-        return Array.from(StrategyController.strategies.values());
+    public async listStrategies(@Query("type") type?: string): Promise<MetaSolverStrategy[]> {
+        return type
+            ? Array.from(StrategyController.strategies.values()).filter(s => s.problemTypeId === type)
+            : Array.from(StrategyController.strategies.values());
+    }
+
+    @Delete("{id}")
+    public async deleteStrategy(@Path() id: string): Promise<{ success: boolean }> {
+        const existed = StrategyController.strategies.delete(id);
+        if (!existed) {
+            this.setStatus(404);
+            throw 'Strategy not found';
+        }
+        return { success: true };
     }
 
     @Post("{id}/execute")

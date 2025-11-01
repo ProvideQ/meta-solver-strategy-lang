@@ -167,6 +167,7 @@ export function RegisterRoutes(app: Router) {
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsStrategyController_listStrategies: Record<string, TsoaRoute.ParameterSchema> = {
+                type: {"in":"query","name":"type","dataType":"string"},
         };
         app.get('/strategies',
             ...(fetchMiddlewares<RequestHandler>(StrategyController)),
@@ -184,6 +185,36 @@ export function RegisterRoutes(app: Router) {
 
               await templateService.apiHandler({
                 methodName: 'listStrategies',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsStrategyController_deleteStrategy: Record<string, TsoaRoute.ParameterSchema> = {
+                id: {"in":"path","name":"id","required":true,"dataType":"string"},
+        };
+        app.delete('/strategies/:id',
+            ...(fetchMiddlewares<RequestHandler>(StrategyController)),
+            ...(fetchMiddlewares<RequestHandler>(StrategyController.prototype.deleteStrategy)),
+
+            async function StrategyController_deleteStrategy(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsStrategyController_deleteStrategy, request, response });
+
+                const controller = new StrategyController();
+
+              await templateService.apiHandler({
+                methodName: 'deleteStrategy',
                 controller,
                 response,
                 next,
