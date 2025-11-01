@@ -54,7 +54,6 @@ export const setupConfigExtended = (): UserConfig => {
                 }],
                 userConfiguration: {
                     json: JSON.stringify({
-                        'workbench.colorTheme': 'Default Dark Modern',
                         'editor.semanticHighlighting.enabled': true
                     })
                 }
@@ -68,4 +67,5 @@ export const executeExtended = async (htmlElement: HTMLElement) => {
     const userConfig = setupConfigExtended();
     const wrapper = new MonacoEditorLanguageClientWrapper();
     await wrapper.initAndStart(userConfig, htmlElement);
+    return wrapper;
 };

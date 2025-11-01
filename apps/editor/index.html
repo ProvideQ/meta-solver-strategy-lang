@@ -1,34 +1,535 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Langium Web</title>
-    <link href="./static/styles.css" rel="stylesheet" />
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Meta Solver Strategy Editor</title>
+    <link href="./static/styles.css" rel="stylesheet"/>
 </head>
 
 <body>
-    <h1>Meta Solver Strategy in Langium</h1>
-    <div class="wrapper">
-        <b>Monaco-Editor + Textmate</b>
-        <!-- Monaco Root -->
-        <div id="monaco-editor-root"></div>
+<header class="app-header">
+  <div class="layout-inner app-header-inner">
+    <div class="brand">
+        <img src="https://langium.org/assets/langium_logo_w_nib.svg" alt="Langium">
+        <div class="title">Meta Solver Strategy Editor</div>
     </div>
-    <footer>
-        <p style="font-style:italic">Powered by</p>
-        <img width="125" src="https://langium.org/assets/langium_logo_w_nib.svg" alt="Langium">
-    </footer>
-    <!-- Monaco Configuration -->
-    <script type="module">
-        // vite is used to resolve the included TypeScript files
-        import { configureMonacoWorkers } from './src/setupCommon';
-        import { executeExtended } from './src/setupExtended';
+  </div>
+</header>
 
-        configureMonacoWorkers();
-        // keep a reference to a promise for when the editor is finished starting, we'll use this to setup the canvas on load
-        const startingPromise = executeExtended(document.getElementById('monaco-editor-root'));
-    </script>
+<div class="container">
+  <div class="layout-inner">
+    <aside class="sidebar">
+        <div class="section">
+            <label for="problem-type-button">Problem Type</label>
+            <div id="problem-type-dropdown" class="dropdown">
+                <button id="problem-type-button" class="dropdown-button" aria-haspopup="listbox" aria-expanded="false">
+                    Select a problem type
+                </button>
+                <div id="problem-type-list" class="dropdown-list" role="listbox"></div>
+                <div id="problem-type-desc" class="muted problem-type-desc">&nbsp;</div>
+            </div>
+        </div>
+        <div class="section">
+            <div class="section-header">
+                <label>Strategies</label>
+                <button id="btn-new" title="Create new strategy">New</button>
+            </div>
+            <div id="strategy-list">
+                <div class="empty">Loading strategies...</div>
+            </div>
+        </div>
+        <div class="section" style="margin-top:16px">
+            <div class="muted">Note</div>
+            <div class="muted">Select a problem type, then choose an existing strategy or create a new one to edit and
+                save.</div>
+        </div>
+        <div class="section" style="margin-top:16px">
+            <div class="muted">Hint</div>
+            <div class="muted">Press Ctrl+Space inside the editor to trigger code completion.</div>
+        </div>
+    </aside>
+
+    <main class="main-editor">
+        <div class="editor-header">
+            <div class="toolbar">
+                <button id="btn-save">Save</button>
+            </div>
+            <label for="strategy-name" class="sr-only">Strategy name</label>
+            <div class="input-group" role="group" aria-label="Strategy name">
+                <input id="strategy-name" class="modern-input" type="text" placeholder="Strategy name" aria-label="Strategy name" />
+                <button id="strategy-clear" class="input-clear" title="Clear name" aria-label="Clear name" type="button">✕</button>
+            </div>
+            <div class="flex-fill"></div>
+        </div>
+        <div id="monaco-editor-root"></div>
+        <div class="editor-footer muted" id="status-bar">Not connected to editor</div>
+    </main>
+  </div>
+</div>
+
+<script type="module">
+    // vite is used to resolve the included TypeScript files
+    import { configureMonacoWorkers } from './src/setupCommon';
+    import { executeExtended } from './src/setupExtended';
+    import { toolboxApi } from './src/api';
+
+    configureMonacoWorkers();
+    // keep a reference to a promise for when the editor is finished starting, we'll use this to setup the canvas on load
+    const wrapper = await executeExtended(document.getElementById('monaco-editor-root'));
+
+    // ----- Client API (uses the interpreter server routes) -----
+    const baseUrl = 'http://localhost:5000'; // adjust if needed
+    const api = {
+        listStrategies: async (type = "") => {
+            const res = await fetch(`${baseUrl}/strategies` + (type ? ('?type=' + encodeURIComponent(type)) : ''));
+            if (!res.ok) throw new Error('Failed to list strategies');
+            return res.json();
+        },
+        listAllStrategies: async () => {
+            const res = await fetch(`${baseUrl}/strategies`);
+            if (!res.ok) throw new Error('Failed to list all strategies');
+            return res.json();
+        },
+        getStrategy: async (id) => {
+            const res = await fetch(`${baseUrl}/strategies/${id}`);
+            if (!res.ok) throw new Error('Strategy not found');
+            return res.json();
+        },
+        createStrategy: async (payload) => {
+            const res = await fetch(`${baseUrl}/strategies`, {
+                method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)
+            });
+            if (!res.ok) throw new Error('Failed to create strategy: ' + await res.text());
+            return res.json();
+        },
+        updateStrategy: async (id, payload) => {
+            const res = await fetch(`${baseUrl}/strategies/${id}`, {
+                method: 'PATCH', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)
+            });
+            if (!res.ok) throw new Error('Failed to update strategy: ' + await res.text());
+            return res.json();
+        },
+        deleteStrategy: async (id) => {
+            const res = await fetch(`${baseUrl}/strategies/${id}`, {method: 'DELETE'});
+            if (!res.ok) {
+                const txt = await res.text().catch(() => '');
+                throw new Error('Failed to delete strategy' + (txt ? ': ' + txt : ''));
+            }
+            if (res.status === 204) return {};
+            try {
+                return await res.json();
+            } catch {
+                return {};
+            }
+        }
+    };
+
+    // UI wiring
+    const problemTypeButton = document.getElementById('problem-type-button');
+    const problemTypeList = document.getElementById('problem-type-list');
+    let selectedProblemType = '';
+    let problemTypeItems = [];
+    let focusedIndex = -1;
+    let countsByType = {};
+    const strategyListEl = document.getElementById('strategy-list');
+    const btnNew = document.getElementById('btn-new');
+    const btnSave = document.getElementById('btn-save');
+    const nameInput = document.getElementById('strategy-name');
+    const strategyClear = document.getElementById('strategy-clear');
+    const statusBar = document.getElementById('status-bar');
+    const problemTypeDesc = document.getElementById('problem-type-desc');
+
+    // allStrategiesAll holds all strategies (used to compute counts)
+    let allStrategiesAll = [];
+    // displayedStrategies holds the strategies shown for the selected problem type
+    let displayedStrategies = [];
+    // populated from the frontend toolboxApi
+    let problemTypes = [];
+    let selectedStrategyId = null;
+    const defaultCodeTemplate = `solve {type} {type-var}:\n  // implement strategy for {type}`;
+
+    function setStatus(text) {
+        statusBar.textContent = text
+    }
+
+    async function refreshProblemTypes() {
+        // load from frontend toolboxApi, fall back to deriving from strategies
+        try {
+            const types = await toolboxApi.getProblemTypes();
+            if (Array.isArray(types)) {
+                problemTypes = types;
+            }
+        } catch (err) {
+            console.warn('Could not fetch problem types from toolboxApi:', err);
+            problemTypes = [];
+        }
+        renderProblemTypes();
+    }
+
+    async function refreshStrategies() {
+        strategyListEl.innerHTML = '<div class="empty">Loading strategies...</div>';
+        try {
+            // fetch all strategies for counts
+            allStrategiesAll = await api.listAllStrategies();
+            // fetch the filtered list for display (if a type is selected)
+            if (selectedProblemType) {
+                displayedStrategies = await api.listStrategies(selectedProblemType);
+            } else {
+                displayedStrategies = [];
+            }
+        } catch (err) {
+            strategyListEl.innerHTML = '<div class="empty">Failed to load strategies</div>';
+            setStatus('Failed to load strategies: ' + err.message);
+            return;
+        }
+        // After loading strategies, update the problem type list counts and then render strategies
+        renderProblemTypes();
+        renderStrategyList();
+    }
+
+    function renderProblemTypes() {
+        // compute counts from the full list of strategies
+        countsByType = allStrategiesAll.reduce((acc, s) => {
+            const id = s.problemTypeId || '';
+            acc[id] = (acc[id] || 0) + 1;
+            return acc;
+        }, {});
+
+        // render dropdown items (clear existing)
+        problemTypeList.innerHTML = '';
+        const types = (problemTypes && problemTypes.length > 0)
+            ? problemTypes.map(pt => ({id: pt.id, label: pt.id}))
+            : Array.from(new Set(allStrategiesAll.map(s => s.problemTypeId))).sort().map(t => ({id: t, label: t}));
+
+        types.forEach((t, idx) => {
+            const count = countsByType[t.id] || 0;
+            const item = document.createElement('div');
+            item.className = 'dropdown-item';
+            item.dataset.value = t.id;
+            item.dataset.index = String(idx);
+            item.dataset.description = t.description || '';
+            item.tabIndex = 0; // make items focusable so Enter key works
+            const badge = document.createElement('div');
+            badge.className = 'badge-circle';
+            badge.textContent = String(count);
+            // badge color class
+            badge.classList.add(count > 0 ? 'nonzero' : 'zero');
+            const lbl = document.createElement('div');
+            lbl.className = 'label';
+            lbl.textContent = t.label;
+            item.appendChild(badge);
+            item.appendChild(lbl);
+            item.addEventListener('click', async () => {
+                selectDropdownIndex(idx);
+            });
+            item.addEventListener('keydown', (ev) => {
+                // allow Enter/Space on item
+                if (ev.key === 'Enter' || ev.key === ' ') {
+                    ev.preventDefault();
+                    selectDropdownIndex(idx);
+                }
+            });
+            problemTypeList.appendChild(item);
+        });
+
+        // save a live list of items for keyboard nav
+        problemTypeItems = Array.from(problemTypeList.querySelectorAll('.dropdown-item'));
+        if (problemTypeItems.length === 0) {
+            problemTypeButton.textContent = 'No problem types';
+        } else if (problemTypeItems.length === 1) {
+            // auto-select single
+            selectDropdownIndex(0);
+        } else {
+            // multiple types: keep placeholder unless something already selected
+            if (!selectedProblemType) {
+                problemTypeButton.textContent = 'Select a problem type';
+            } else {
+                updateButtonBadge();
+            }
+        }
+    }
+
+    function updateButtonBadge() {
+        // update the badge/text on the button to reflect countsByType for selectedProblemType
+        if (!selectedProblemType) return;
+        const cnt = countsByType[selectedProblemType] || 0;
+        problemTypeButton.innerHTML = '';
+        const btnBadge = document.createElement('div');
+        btnBadge.className = 'badge-circle ' + (cnt > 0 ? 'nonzero' : 'zero');
+        btnBadge.textContent = String(cnt);
+        const btnText = document.createElement('span');
+        // find label text from the dropdown items
+        const found = problemTypeList.querySelector(`.dropdown-item[data-value="${selectedProblemType}"] .label`);
+        btnText.textContent = ' ' + (found ? found.textContent : selectedProblemType);
+        problemTypeButton.appendChild(btnBadge);
+        problemTypeButton.appendChild(btnText);
+        const problemType = problemTypes.find(t => t.id === selectedProblemType)
+        if (problemType) {
+            problemTypeDesc.textContent = problemType.description || '\u00A0';
+        }
+    }
+
+    function openDropdown() {
+        const show = problemTypeList.classList.toggle('show');
+        problemTypeButton.setAttribute('aria-expanded', String(show));
+        if (show) {
+            // focus current selection or first item
+            focusedIndex = problemTypeItems.findIndex(it => it.dataset.value === selectedProblemType);
+            if (focusedIndex < 0) focusedIndex = 0;
+            focusDropdownItem(focusedIndex);
+        }
+    }
+
+    function closeDropdown(e) {
+        if (e === undefined || !document.getElementById('problem-type-dropdown').contains(e.target)) {
+            problemTypeList.classList.remove('show');
+            problemTypeButton.setAttribute('aria-expanded', 'false');
+            focusedIndex = -1;
+            problemTypeButton.focus();
+        }
+    }
+
+    function focusDropdownItem(i) {
+        problemTypeItems.forEach((it, idx) => it.classList.toggle('focused', idx === i));
+        const el = problemTypeItems[i];
+        if (el) el.scrollIntoView({block: 'nearest'});
+        if (el) el.focus();
+    }
+
+    function selectDropdownIndex(i) {
+        const it = problemTypeItems[i];
+        if (!it) return;
+        selectedProblemType = it.dataset.value;
+        updateButtonBadge();
+        // update description area
+        if (problemTypeDesc) problemTypeDesc.textContent = it.dataset.description || '\u00A0';
+        // close and refresh
+        closeDropdown();
+        refreshStrategies();
+    }
+
+    // keyboard navigation on button and list
+    problemTypeButton.addEventListener('keydown', (ev) => {
+        if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') {
+            ev.preventDefault();
+            if (!problemTypeList.classList.contains('show')) openDropdown();
+            else {
+                // move focus
+                if (ev.key === 'ArrowDown') {
+                    focusedIndex = Math.min(problemTypeItems.length - 1, (focusedIndex < 0 ? 0 : focusedIndex + 1));
+                } else {
+                    focusedIndex = Math.max(0, (focusedIndex < 0 ? problemTypeItems.length - 1 : focusedIndex - 1));
+                }
+                focusDropdownItem(focusedIndex);
+            }
+        } else if (ev.key === 'Enter' || ev.key === ' ') {
+            ev.preventDefault();
+            if (problemTypeList.classList.contains('show')) closeDropdown(); else openDropdown();
+        } else if (ev.key === 'Escape') {
+            if (problemTypeList.classList.contains('show')) closeDropdown();
+        }
+    });
+
+    problemTypeList.addEventListener('keydown', (ev) => {
+        if (!problemTypeItems.length) return;
+        if (ev.key === 'ArrowDown') {
+            ev.preventDefault();
+            focusedIndex = Math.min(problemTypeItems.length - 1, focusedIndex + 1);
+            focusDropdownItem(focusedIndex);
+        } else if (ev.key === 'ArrowUp') {
+            ev.preventDefault();
+            focusedIndex = Math.max(0, focusedIndex - 1);
+            focusDropdownItem(focusedIndex);
+        } else if (ev.key === 'Home') {
+            ev.preventDefault();
+            focusedIndex = 0;
+            focusDropdownItem(focusedIndex);
+        } else if (ev.key === 'End') {
+            ev.preventDefault();
+            focusedIndex = problemTypeItems.length - 1;
+            focusDropdownItem(focusedIndex);
+        } else if (ev.key === 'Enter' || ev.key === ' ') {
+            ev.preventDefault();
+            selectDropdownIndex(focusedIndex);
+        } else if (ev.key === 'Escape') {
+            ev.preventDefault();
+            closeDropdown();
+        }
+    });
+
+    function renderStrategyList() {
+        const filter = selectedProblemType; // use the selected problem type
+        strategyListEl.innerHTML = '';
+        if (!filter) {
+            strategyListEl.innerHTML = '<div class="empty">Select a problem type to list strategies</div>';
+            return;
+        }
+        const filtered = displayedStrategies.filter(s => s.problemTypeId === filter);
+        if (filtered.length === 0) {
+            strategyListEl.innerHTML = '<div class="empty">No strategies for this problem type</div>';
+            return;
+        }
+        filtered.forEach(s => {
+            const el = document.createElement('div');
+            el.className = 'strategy-item' + (s.id === selectedStrategyId ? ' selected' : '');
+            el.title = s.problemTypeId;
+            el.onclick = () => selectStrategy(s.id);
+
+            // left: name
+            const nameSpan = document.createElement('span');
+            nameSpan.textContent = s.name || '(unnamed)';
+
+            // meta/right container
+            const right = document.createElement('div');
+            right.className = 'strategy-right';
+
+            const meta = document.createElement('div');
+            meta.className = 'strategy-meta';
+            meta.textContent = s.problemTypeId;
+            right.appendChild(meta);
+
+            // delete button
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-btn';
+            deleteBtn.title = 'Delete strategy';
+            deleteBtn.textContent = 'Delete';
+            deleteBtn.addEventListener('click', async (ev) => {
+                ev.stopPropagation();
+                if (!confirm(`Delete strategy "${s.name || s.id}"?`)) return;
+                setStatus('Deleting...');
+                try {
+                    await api.deleteStrategy(s.id);
+                    if (selectedStrategyId === s.id) {
+                        selectedStrategyId = null;
+                        nameInput.value = '';
+                        try {
+                            wrapper.getEditor().setValue('');
+                        } catch (e) { /* ignore */
+                        }
+                    }
+                    await refreshStrategies();
+                    setStatus('Deleted ' + (s.name || s.id));
+                } catch (err) {
+                    setStatus('Delete failed: ' + err.message);
+                }
+            });
+
+            el.appendChild(nameSpan);
+            right.appendChild(deleteBtn);
+            el.appendChild(right);
+            strategyListEl.appendChild(el);
+        });
+    }
+
+    async function selectStrategy(id) {
+        selectedStrategyId = id;
+        renderStrategyList();
+        setStatus('Loading strategy...');
+        try {
+            const s = await api.getStrategy(id);
+            nameInput.value = s.name || '';
+            // set value on the editor wrapper
+            try {
+                wrapper.getEditor().setValue(s.code || '');
+            } catch (e) {
+                console.warn('Failed to set editor value', e);
+            }
+            setStatus('Loaded strategy "' + (s.name || s.id) + '"');
+        } catch (err) {
+            setStatus('Failed to load strategy: ' + err.message);
+        }
+    }
+
+    // toggle dropdown visibility when clicking the button
+    problemTypeButton.addEventListener('click', () => openDropdown());
+    // close dropdown when clicking outside
+    document.addEventListener('click', (e) => closeDropdown(e));
+
+    btnNew.addEventListener('click', async () => {
+        // ensure a problem type is selected
+        let type = selectedProblemType;
+        if (!type) {
+            // auto-select the first available problem type option if user hasn't selected one
+            const items = Array.from(problemTypeList.querySelectorAll('.dropdown-item'));
+            if (items.length === 0) {
+                setStatus('No problem types available');
+                return;
+            }
+            type = items[0].dataset.value || '';
+            selectedProblemType = type;
+            // update button label to first
+            const firstBadge = items[0].querySelector('.badge-circle');
+            const firstLabel = items[0].querySelector('.label');
+            problemTypeButton.innerHTML = '';
+            if (firstBadge) problemTypeButton.appendChild(firstBadge.cloneNode(true));
+            const btnText = document.createElement('span');
+            btnText.textContent = ' ' + (firstLabel?.textContent || '');
+            problemTypeButton.appendChild(btnText);
+            // refresh strategies for the selected type (this will also update counts)
+            await refreshStrategies();
+        }
+        selectedStrategyId = null;
+        nameInput.value = '';
+        const generated = (defaultCodeTemplate)
+            .replaceAll('{type}', type)
+            .replaceAll('{type-var}', type.toLowerCase());
+        setStatus('Generating new ' + type + ' strategy...');
+        try {
+            wrapper.getEditor().setValue(generated);
+            setStatus('Editing new strategy for ' + type);
+            renderStrategyList();
+        } catch (err) {
+            setStatus('Editor not ready: ' + err);
+        }
+    });
+
+    btnSave.addEventListener('click', async () => {
+        const name = nameInput.value && nameInput.value.trim();
+        const code = wrapper.getEditor().getValue();
+        if (!code) {
+            setStatus('Cannot save empty code');
+            return;
+        }
+        if (!name) {
+            setStatus('Please provide a name');
+            return;
+        }
+        setStatus('Saving...');
+        try {
+            if (selectedStrategyId) {
+                const updated = await api.updateStrategy(selectedStrategyId, {name, code});
+                setStatus('Saved "' + updated.name + '"');
+            } else {
+                // creation: post name and code, backend will generate id. Do not use name as id.
+                const created = await api.createStrategy({name, code});
+                selectedStrategyId = created.id; // ensure we store the returned id
+                setStatus('Created "' + created.name + '"');
+            }
+            await refreshStrategies();
+        } catch (err) {
+            setStatus('Save failed: ' + err.message);
+        }
+    });
+
+    // modern input clear button behavior
+    if (nameInput && strategyClear) {
+        // show/hide clear button based on input
+        const updateClearVisibility = () => { strategyClear.classList.toggle('visible', !!(nameInput.value && nameInput.value.trim())); };
+         nameInput.addEventListener('input', updateClearVisibility);
+         strategyClear.addEventListener('click', () => { nameInput.value = ''; updateClearVisibility(); nameInput.focus(); });
+         // initialize visibility
+         updateClearVisibility();
+     }
+
+    // initial load: fetch problem types from toolboxApi, then strategies
+    // Load strategies first so renderProblemTypes can fallback to types derived from strategies
+    (async () => {
+        await refreshStrategies();
+        await refreshProblemTypes();
+    })();
+</script>
 </body>
 
 </html>
