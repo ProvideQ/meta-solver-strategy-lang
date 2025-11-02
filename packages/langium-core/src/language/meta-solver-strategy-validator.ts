@@ -124,7 +124,12 @@ export class MetaSolverStrategyValidator {
     async checkSolver(solver: Solver, accept: ValidationAcceptor): Promise<void> {
         await toolboxApi.initialize(); // Ensure problem types are initialized before checking
 
-        const solverId = solver.solverId.solverId;
+        const solverId = solver.solverId?.solverId;
+        if (!solverId) {
+            accept('error', 'Solver ID is required for solver.', { node: solver, property: "solverId" });
+            return;
+        }
+
         const problemTypeId = getProblemTypeBySolverId(toolboxApi, solver.solverId);
         if (!problemTypeId) {
             accept('error', `Solver ID '${solverId}' is not associated with any problem type.`, { node: solver.solverId, property: "solverId" });
