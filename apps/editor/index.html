@@ -129,6 +129,8 @@
     // UI wiring
     const problemTypeButton = document.getElementById('problem-type-button');
     const problemTypeList = document.getElementById('problem-type-list');
+    // explicit flag to track dropdown open state (avoid toggle race with document clicks)
+    let dropdownOpen = false;
     let selectedProblemType = '';
     let problemTypeItems = [];
     let focusedIndex = -1;
@@ -272,21 +274,26 @@
     }
 
     function openDropdown() {
-        const show = problemTypeList.classList.toggle('show');
-        problemTypeButton.setAttribute('aria-expanded', String(show));
-        if (show) {
-            // focus current selection or first item
-            focusedIndex = problemTypeItems.findIndex(it => it.dataset.value === selectedProblemType);
-            if (focusedIndex < 0) focusedIndex = 0;
-            focusDropdownItem(focusedIndex);
-        }
+        // Explicitly open the dropdown. Use dropdownOpen flag to avoid toggle races when clicks bubble to document.
+        dropdownOpen = true;
+        problemTypeList.classList.add('show');
+        problemTypeButton.setAttribute('aria-expanded', 'true');
+        // focus current selection or first item
+        focusedIndex = problemTypeItems.findIndex(it => it.dataset.value === selectedProblemType);
+        if (focusedIndex < 0) focusedIndex = 0;
+        focusDropdownItem(focusedIndex);
     }
 
     function closeDropdown(e) {
+        // only act if dropdown is open
+        if (!dropdownOpen) return;
+        // if no event passed (manual close) or the click target is outside the dropdown, close it
         if (e === undefined || !document.getElementById('problem-type-dropdown').contains(e.target)) {
+            dropdownOpen = false;
             problemTypeList.classList.remove('show');
             problemTypeButton.setAttribute('aria-expanded', 'false');
             focusedIndex = -1;
+            // return focus to the button for accessibility
             problemTypeButton.focus();
         }
     }
@@ -314,7 +321,7 @@
     problemTypeButton.addEventListener('keydown', (ev) => {
         if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') {
             ev.preventDefault();
-            if (!problemTypeList.classList.contains('show')) openDropdown();
+            if (!dropdownOpen) openDropdown();
             else {
                 // move focus
                 if (ev.key === 'ArrowDown') {
@@ -326,9 +333,9 @@
             }
         } else if (ev.key === 'Enter' || ev.key === ' ') {
             ev.preventDefault();
-            if (problemTypeList.classList.contains('show')) closeDropdown(); else openDropdown();
+            if (dropdownOpen) closeDropdown(); else openDropdown();
         } else if (ev.key === 'Escape') {
-            if (problemTypeList.classList.contains('show')) closeDropdown();
+            if (dropdownOpen) closeDropdown();
         }
     });
 
@@ -443,7 +450,7 @@
     }
 
     // toggle dropdown visibility when clicking the button
-    problemTypeButton.addEventListener('click', () => openDropdown());
+    problemTypeButton.addEventListener('click', (ev) => { ev.stopPropagation(); if (dropdownOpen) closeDropdown(); else openDropdown(); });
     // close dropdown when clicking outside
     document.addEventListener('click', (e) => closeDropdown(e));
 
