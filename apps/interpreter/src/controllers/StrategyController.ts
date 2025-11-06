@@ -23,7 +23,7 @@ export interface UpdateStrategyInput {
 
 @Route("strategies")
 export class StrategyController extends Controller {
-    private static strategies = new Map<string, MetaSolverStrategy>();
+    private static readonly strategies = new Map<string, MetaSolverStrategy>();
 
     @Post()
     public async saveStrategy(
@@ -32,7 +32,7 @@ export class StrategyController extends Controller {
         const { problemTypeId, error } = await inferProblemTypeIdFromCode(body.code);
         if (!problemTypeId || error) {
             this.setStatus(400);
-            throw 'Code is not valid ' + error;
+            throw new Error('Code is not valid ' + error);
         }
         const id = uuidv4();
         const strategy = { ...body, id, problemTypeId };
@@ -48,13 +48,13 @@ export class StrategyController extends Controller {
         const strategy = StrategyController.strategies.get(id);
         if (!strategy) {
             this.setStatus(404);
-            throw 'Strategy not found';
+            throw new Error('Strategy not found');
         }
         if (body.code !== undefined) {
             const { problemTypeId, error } = await inferProblemTypeIdFromCode(body.code);
             if (!problemTypeId || error) {
                 this.setStatus(400);
-                throw 'Code is not valid ' + error;
+                throw new Error('Code is not valid ' + error);
             }
             strategy.problemTypeId = problemTypeId;
             strategy.code = body.code;
@@ -83,24 +83,24 @@ export class StrategyController extends Controller {
         const existed = StrategyController.strategies.delete(id);
         if (!existed) {
             this.setStatus(404);
-            throw 'Strategy not found';
+            throw new Error('Strategy not found');
         }
         return { success: true };
     }
 
-    @Post("{id}/execute")
+    @Post("{strategyId}/execute")
     public async executeStrategy(
-        @Path() id: string,
+        @Path() strategyId: string,
         @Body() body: ExecuteStrategyInput
     ): Promise<{ result: any }> {
-        const strategy = StrategyController.strategies.get(id);
+        const strategy = StrategyController.strategies.get(strategyId);
         if (!strategy) {
             this.setStatus(404);
-            throw 'Strategy not found';
+            throw new Error('Strategy not found');
         }
         if (!body.problemId) {
             this.setStatus(400);
-            throw 'Missing problemId';
+            throw new Error('Missing problemId');
         }
         const result = await solve(strategy, body.problemId);
         return { result };

@@ -259,7 +259,7 @@
 				]
 			}
 		},
-		"/strategies/{id}/execute": {
+		"/strategies/{strategyId}/execute": {
 			"post": {
 				"operationId": "ExecuteStrategy",
 				"responses": {
@@ -284,7 +284,7 @@
 				"parameters": [
 					{
 						"in": "path",
-						"name": "id",
+						"name": "strategyId",
 						"required": true,
 						"schema": {
 							"type": "string"

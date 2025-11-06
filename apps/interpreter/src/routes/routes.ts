@@ -227,10 +227,10 @@ export function RegisterRoutes(app: Router) {
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsStrategyController_executeStrategy: Record<string, TsoaRoute.ParameterSchema> = {
-                id: {"in":"path","name":"id","required":true,"dataType":"string"},
+                strategyId: {"in":"path","name":"strategyId","required":true,"dataType":"string"},
                 body: {"in":"body","name":"body","required":true,"ref":"ExecuteStrategyInput"},
         };
-        app.post('/strategies/:id/execute',
+        app.post('/strategies/:strategyId/execute',
             ...(fetchMiddlewares<RequestHandler>(StrategyController)),
             ...(fetchMiddlewares<RequestHandler>(StrategyController.prototype.executeStrategy)),
 
