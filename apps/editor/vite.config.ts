@@ -1,18 +1,19 @@
-import { defineConfig } from 'vite';
+import {defineConfig} from 'vite';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import {fileURLToPath} from 'node:url';
 import importMetaUrlPlugin from '@codingame/esbuild-import-meta-url-plugin';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default defineConfig(() => {
-    const config = {
+    return {
         build: {
             target: 'esnext',
             rollupOptions: {
                 input: {
-                    index: path.resolve(__dirname, './apps/editor/index.html')
+                    // The config file lives in apps/editor, so the entry is the local index.html
+                    index: path.resolve(__dirname, './index.html')
                 }
             }
         },
@@ -34,5 +35,4 @@ export default defineConfig(() => {
             port: 5173
         }
     };
-    return config;
 });

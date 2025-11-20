@@ -215,7 +215,7 @@ export async function visitExpression(node: Expression, context: MetaSolverStrat
                 return Promise.reject("Problem type not found for problem: " + node.problemName.ref.name);
             }
 
-            const attribute = problemType?.attributes.find(attr => attr === node.attribute?.name);
+            const attribute = problemType?.attributes.find((attr: string) => attr === node.attribute?.name);
             if (!attribute) {
                 return Promise.reject("Attribute " + node.attribute?.name + " not found in problem type " + problemType.id);
             }
@@ -259,7 +259,7 @@ export async function visitForeach(node: Foreach, context: MetaSolverStrategyCon
 
 export async function inferProblemTypeIdFromCode(code: string): Promise<{ problemTypeId?: string, error?: string }> {
     try {
-        const services = createMetaSolverStrategyServices(toolboxApi, NodeFileSystem).MetaSolverStrategy;
+        const services = createMetaSolverStrategyServices(toolboxApi, { ...NodeFileSystem }).MetaSolverStrategy;
         const doc = await extractDocument(code, services);
         const result = doc.parseResult.value;
         if (result && result.$type === SolveProblem) {
@@ -274,7 +274,8 @@ export async function inferProblemTypeIdFromCode(code: string): Promise<{ proble
             };
         }
     } catch (e) {
-    // fallback or log error
+        // fallback or log error
+        console.error("Error inferring problem type ID from code:", e);
     }
     return { problemTypeId: undefined, error: "Failed to infer problem type ID from code" };
 }

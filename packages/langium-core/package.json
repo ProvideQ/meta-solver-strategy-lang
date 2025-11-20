@@ -11,6 +11,5 @@
     "langium": "~3.5.0",
     "toolbox-api": "*"
   },
-  "devDependencies": {},
   "type": "module"
 }
