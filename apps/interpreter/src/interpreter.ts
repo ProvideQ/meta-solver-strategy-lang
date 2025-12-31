@@ -3,8 +3,16 @@ import { NodeFileSystem } from 'langium/node';
 import { BoolExpression, createMetaSolverStrategyServices, Else, Expression, Foreach, If, isIf, ProblemArrayName, ProblemName, Solve, SolveProblem, Solver } from 'langium-core';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
-import { ProblemDto, ProblemState, SolverSetting as ApiSolverSetting } from "toolbox-api";
-import { toolboxApi } from './api.ts';
+import { ProblemDto, ProblemState, SolverSetting as ApiSolverSetting, ToolboxApi } from "toolbox-api";
+
+const apiBaseUrl = process.env.TOOLBOX_API_URL;
+if (!apiBaseUrl) {
+    throw new Error('TOOLBOX_API_URL environment variable is not set');
+}
+console.log("Using Toolbox API base URL:", apiBaseUrl);
+export const toolboxApi = new ToolboxApi(apiBaseUrl);
+
+toolboxApi.initialize();
 
 export interface MetaSolverStrategy {
     id: string;
@@ -31,16 +39,16 @@ export async function solve(strategy: MetaSolverStrategy, problemId: string) {
     const services = createMetaSolverStrategyServices(toolboxApi, NodeFileSystem).MetaSolverStrategy;
     const doc = await extractDocument(strategy.code, services);
     if (doc.parseResult.lexerErrors.length > 0 || doc.parseResult.parserErrors.length > 0) {
-        return Promise.reject("Failed to parse the document " + strategy.id + ". Lexer errors: " + doc.parseResult.lexerErrors.length + ", Parser errors: " + doc.parseResult.parserErrors.length);
+        throw new Error("Failed to parse the document " + strategy.id + ". Lexer errors: " + doc.parseResult.lexerErrors.length + ", Parser errors: " + doc.parseResult.parserErrors.length);
     }
 
     const result = doc.parseResult.value;
-    if (result.$type === SolveProblem) {
+    if (result.$type === SolveProblem.$type) {
         const node = result as SolveProblem;
-        if (node.problemType && node.problemName.$type == ProblemName) {
+        if (node.problemType && node.problemName.$type === ProblemName.$type) {
             const problem = await toolboxApi.fetchProblem(node.problemType.problemType, problemId);
             if (problem.error) {
-                return Promise.reject("Failed to fetch " + node.problemType.problemType + " problem " + problemId + ": " + problem.error);
+                throw new Error("Failed to fetch " + node.problemType.problemType + " problem " + problemId + ": " + problem.error);
             }
 
             return await visitSolveProblem(result as SolveProblem, [problem], {
@@ -50,7 +58,7 @@ export async function solve(strategy: MetaSolverStrategy, problemId: string) {
         }
     }
 
-    return Promise.reject("Unsupported root node type: " + result.$type);
+    throw new Error("Unsupported root node type: " + result.$type);
 }
 
 export interface MetaSolverStrategyContext {
@@ -60,43 +68,43 @@ export interface MetaSolverStrategyContext {
 }
 
 export async function visitSolveProblem(node: SolveProblem, problems: ProblemDto<any>[], context: MetaSolverStrategyContext): Promise<ProblemDto<any> | undefined> {
-    if (node.problemType && node.problemName.$type == ProblemName) {
+    if (node.problemType && node.problemName.$type == ProblemName.$type) {
         context.variables.set(node.problemName, problems[0]);
 
-        if (node.solve.$type === Solver) {
+        if (node.solve.$type === Solver.$type) {
             return await visitSolver(node.solve, context);
         } else if (isIf(node.solve)) {
             return await visitIf(node.solve, context);
         }
-    } else if (node.problemTypes && node.problemName.$type == ProblemArrayName) {
+    } else if (node.problemTypes && node.problemName.$type == ProblemArrayName.$type) {
         context.arrays.set(node.problemName, problems);
 
-        if (node.solve.$type === Foreach) {
+        if (node.solve.$type === Foreach.$type) {
             return await visitForeach(node.solve, context);
         }
     }
 
-    return Promise.reject("Unsupported SolveProblem node: " + node.$type);
+    throw new Error("Unsupported SolveProblem node: " + node.$type);
 }
 
 export async function visitSolve(node: Solve, context: MetaSolverStrategyContext): Promise<ProblemDto<any> | undefined> {
-    if (node.$type === If || node.$type === Else) {
+    if (node.$type === If.$type || node.$type === Else.$type) {
         return await visitIf(node, context);
-    } else if (node.$type === Solver) {
+    } else if (node.$type === Solver.$type) {
         return await visitSolver(node, context);
     }
 
-    return Promise.reject("Unsupported node type: " + node.$type);
+    throw new Error("Unsupported node type: " + node.$type);
 }
 
 export async function visitSolver(node: Solver, context: MetaSolverStrategyContext): Promise<ProblemDto<any> | undefined> {
     if (node.problemName.ref === undefined) {
-        return Promise.reject("Solver problem name is not defined");
+        throw new Error("Solver problem name is not defined");
     }
 
     const problem = context.variables.get(node.problemName.ref);
     if (problem?.typeId === undefined) {
-        return Promise.reject("Problem not found for solver: " + node.problemName.ref.name);
+        throw new Error("Problem not found for solver: " + node.problemName.ref.name);
     }
 
     // Update solver, solver settings and start solving the problem
@@ -122,23 +130,24 @@ export async function visitSolver(node: Solver, context: MetaSolverStrategyConte
     }
 
     // Run all subroutines for the problem
-    if (node.subRoutines?.subRoutine) {
-        for (const subRoutine of node.subRoutines?.subRoutine) {
+    const subRoutines = node.subRoutines?.subRoutine;
+    if (subRoutines) {
+        for (const subRoutine of subRoutines) {
             const problemType = subRoutine.problemType?.problemType ?? subRoutine.problemTypes?.problemType.problemType;
             if (problemType === undefined) continue;
 
             const subProblem = solution.subProblems.find(p => p.subRoutine.typeId === problemType);
             if (subProblem === undefined) {
-                return Promise.reject("No sub problems found for sub routine: " + problemType);
+                throw new Error("No sub problems found for sub routine: " + problemType);
             }
 
             const problems: ProblemDto<any>[] = [];
-            for (const subProblemId of subProblem!.subProblemIds) {
+            for (const subProblemId of subProblem.subProblemIds) {
                 const subProblemDto = await toolboxApi.fetchProblem(problemType, subProblemId);
                 if (subProblemDto) {
                     problems.push(subProblemDto);
                 } else {
-                    return Promise.reject("Sub problem not found: " + subProblemId);
+                    throw new Error("Sub problem not found: " + subProblemId);
                 }
             }
 
@@ -169,7 +178,7 @@ export async function visitIf(node: If, context: MetaSolverStrategyContext): Pro
         }
     }
 
-    return Promise.reject("No valid way to solve the problem found in if / else statement");
+    throw new Error("No valid way to solve the problem found in if / else statement");
 }
 
 export async function visitBoolExpression(node: BoolExpression, context: MetaSolverStrategyContext): Promise<boolean> {
@@ -199,7 +208,7 @@ export async function visitBoolExpression(node: BoolExpression, context: MetaSol
         }
     }
 
-    return Promise.reject("Unsupported boolean expression: " + node.$cstNode?.text);
+    throw new Error("Unsupported boolean expression: " + node.$cstNode?.text);
 }
 
 export async function visitExpression(node: Expression, context: MetaSolverStrategyContext): Promise<any> {
@@ -212,21 +221,21 @@ export async function visitExpression(node: Expression, context: MetaSolverStrat
         if (problem) {
             const problemType = toolboxApi.getProblemType(problem.typeId);
             if (!problemType) {
-                return Promise.reject("Problem type not found for problem: " + node.problemName.ref.name);
+                throw new Error("Problem type not found for problem: " + node.problemName.ref.name);
             }
 
-            const attribute = problemType?.attributes.find(attr => attr === node.attribute?.name);
+            const attribute = problemType?.attributes.find((attr: string) => attr === node.attribute?.name);
             if (!attribute) {
-                return Promise.reject("Attribute " + node.attribute?.name + " not found in problem type " + problemType.id);
+                throw new Error("Attribute " + node.attribute?.name + " not found in problem type " + problemType.id);
             }
 
             return await toolboxApi.fetchProblemAttribute(problemType?.id, problem.id, attribute);
         } else {
-            return Promise.reject("Problem not found: " + node.problemName.ref.name);
+            throw new Error("Problem not found: " + node.problemName.ref.name);
         }
     }
 
-    return Promise.reject("Unsupported expression type: " + node.$type);
+    throw new Error("Unsupported expression type: " + node.$type);
 }
 
 export async function visitForeach(node: Foreach, context: MetaSolverStrategyContext): Promise<ProblemDto<any> | undefined> {
@@ -259,10 +268,10 @@ export async function visitForeach(node: Foreach, context: MetaSolverStrategyCon
 
 export async function inferProblemTypeIdFromCode(code: string): Promise<{ problemTypeId?: string, error?: string }> {
     try {
-        const services = createMetaSolverStrategyServices(toolboxApi, NodeFileSystem).MetaSolverStrategy;
+        const services = createMetaSolverStrategyServices(toolboxApi, { ...NodeFileSystem }).MetaSolverStrategy;
         const doc = await extractDocument(code, services);
         const result = doc.parseResult.value;
-        if (result && result.$type === SolveProblem) {
+        if (result && result.$type === SolveProblem.$type) {
             const node = result as SolveProblem;
             if (node.problemType) {
                 return {
@@ -274,7 +283,8 @@ export async function inferProblemTypeIdFromCode(code: string): Promise<{ proble
             };
         }
     } catch (e) {
-    // fallback or log error
+        // fallback or log error
+        console.error("Error inferring problem type ID from code:", e);
     }
     return { problemTypeId: undefined, error: "Failed to infer problem type ID from code" };
 }

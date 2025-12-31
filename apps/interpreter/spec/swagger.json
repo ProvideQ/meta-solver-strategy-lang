@@ -1,312 +1,302 @@
 {
-	"openapi": "3.0.0",
-	"components": {
-		"examples": {},
-		"headers": {},
-		"parameters": {},
-		"requestBodies": {},
-		"responses": {},
-		"schemas": {
-			"MetaSolverStrategy": {
-				"properties": {
-					"id": {
-						"type": "string"
-					},
-					"name": {
-						"type": "string"
-					},
-					"code": {
-						"type": "string"
-					},
-					"problemTypeId": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"id",
-					"name",
-					"code",
-					"problemTypeId"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"MetaSolverStrategyInput": {
-				"properties": {
-					"code": {
-						"type": "string"
-					},
-					"name": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"code",
-					"name"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"MetaSolverStrategyResponse": {
-				"properties": {
-					"id": {
-						"type": "string"
-					},
-					"name": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"id",
-					"name"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"UpdateStrategyInput": {
-				"properties": {
-					"code": {
-						"type": "string"
-					},
-					"name": {
-						"type": "string"
-					}
-				},
-				"type": "object",
-				"additionalProperties": false
-			},
-			"ExecuteStrategyInput": {
-				"properties": {
-					"problemId": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"problemId"
-				],
-				"type": "object",
-				"additionalProperties": false
-			}
-		},
-		"securitySchemes": {}
-	},
-	"info": {
-		"title": "interpreter",
-		"version": "1.0.0",
-		"contact": {}
-	},
-	"paths": {
-		"/strategies": {
-			"post": {
-				"operationId": "SaveStrategy",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/MetaSolverStrategy"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [],
-				"requestBody": {
-					"required": true,
-					"content": {
-						"application/json": {
-							"schema": {
-								"$ref": "#/components/schemas/MetaSolverStrategyInput"
-							}
-						}
-					}
-				}
-			},
-			"get": {
-				"operationId": "ListStrategies",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/MetaSolverStrategy"
-									},
-									"type": "array"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "query",
-						"name": "type",
-						"required": false,
-						"schema": {
-							"type": "string"
-						}
-					}
-				]
-			}
-		},
-		"/strategies/{id}": {
-			"patch": {
-				"operationId": "UpdateStrategy",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"allOf": [
-										{
-											"$ref": "#/components/schemas/MetaSolverStrategyResponse"
-										},
-										{
-											"$ref": "#/components/schemas/MetaSolverStrategyInput"
-										}
-									]
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "id",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					}
-				],
-				"requestBody": {
-					"required": true,
-					"content": {
-						"application/json": {
-							"schema": {
-								"$ref": "#/components/schemas/UpdateStrategyInput"
-							}
-						}
-					}
-				}
-			},
-			"get": {
-				"operationId": "GetStrategy",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/MetaSolverStrategy"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "id",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					}
-				]
-			},
-			"delete": {
-				"operationId": "DeleteStrategy",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"properties": {
-										"success": {
-											"type": "boolean"
-										}
-									},
-									"required": [
-										"success"
-									],
-									"type": "object"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "id",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					}
-				]
-			}
-		},
-		"/strategies/{strategyId}/execute": {
-			"post": {
-				"operationId": "ExecuteStrategy",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"properties": {
-										"result": {}
-									},
-									"required": [
-										"result"
-									],
-									"type": "object"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "strategyId",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					}
-				],
-				"requestBody": {
-					"required": true,
-					"content": {
-						"application/json": {
-							"schema": {
-								"$ref": "#/components/schemas/ExecuteStrategyInput"
-							}
-						}
-					}
-				}
-			}
-		}
-	},
-	"servers": [
-		{
-			"url": "/"
-		}
-	]
+  "openapi": "3.0.0",
+  "paths": {
+    "/strategies": {
+      "post": {
+        "operationId": "StrategyController_saveStrategy",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MetaSolverStrategyInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Strategy saved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StrategyDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Code is not valid"
+          }
+        },
+        "summary": "Save a new strategy",
+        "tags": [
+          "strategies"
+        ]
+      },
+      "get": {
+        "operationId": "StrategyController_listStrategies",
+        "parameters": [
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "description": "Filter by problemTypeId",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of strategies returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StrategyDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "List strategies, optionally filtered by problem type id",
+        "tags": [
+          "strategies"
+        ]
+      }
+    },
+    "/strategies/{id}": {
+      "patch": {
+        "operationId": "StrategyController_updateStrategy",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Strategy id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStrategyInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Strategy updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StrategyDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Code is not valid"
+          },
+          "404": {
+            "description": "Strategy not found"
+          }
+        },
+        "summary": "Update an existing strategy",
+        "tags": [
+          "strategies"
+        ]
+      },
+      "get": {
+        "operationId": "StrategyController_getStrategy",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Strategy id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Strategy returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StrategyDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Strategy not found"
+          }
+        },
+        "summary": "Get a strategy by id",
+        "tags": [
+          "strategies"
+        ]
+      },
+      "delete": {
+        "operationId": "StrategyController_deleteStrategy",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Strategy id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Strategy deleted"
+          },
+          "404": {
+            "description": "Strategy not found"
+          }
+        },
+        "summary": "Delete a strategy",
+        "tags": [
+          "strategies"
+        ]
+      }
+    },
+    "/strategies/{strategyId}/execute": {
+      "post": {
+        "operationId": "StrategyController_executeStrategy",
+        "parameters": [
+          {
+            "name": "strategyId",
+            "required": true,
+            "in": "path",
+            "description": "Strategy id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExecuteStrategyInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Execution result returned"
+          },
+          "400": {
+            "description": "Missing problemId or invalid request"
+          },
+          "404": {
+            "description": "Strategy not found"
+          }
+        },
+        "summary": "Execute a strategy against a problem",
+        "tags": [
+          "strategies"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "MetaSolverStrategy",
+    "description": "MetaSolverStrategy Interpreter API",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "schemas": {
+      "MetaSolverStrategyInput": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Strategy source code"
+          },
+          "name": {
+            "type": "string",
+            "description": "Strategy name"
+          }
+        },
+        "required": [
+          "code",
+          "name"
+        ]
+      },
+      "StrategyDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Strategy id"
+          },
+          "name": {
+            "type": "string",
+            "description": "Strategy name"
+          },
+          "code": {
+            "type": "string",
+            "description": "Strategy source code"
+          },
+          "problemTypeId": {
+            "type": "string",
+            "description": "Inferred problem type id for this strategy"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "code",
+          "problemTypeId"
+        ]
+      },
+      "UpdateStrategyInput": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Updated code for the strategy"
+          },
+          "name": {
+            "type": "string",
+            "description": "Updated name for the strategy"
+          }
+        }
+      },
+      "ExecuteStrategyInput": {
+        "type": "object",
+        "properties": {
+          "problemId": {
+            "type": "string",
+            "description": "Problem id to execute the strategy against"
+          }
+        },
+        "required": [
+          "problemId"
+        ]
+      }
+    }
+  }
 }
