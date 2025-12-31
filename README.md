@@ -1,11 +1,23 @@
 # Editor Setup
 
-- Generate parser for the Langium grammar
+1. Install the NestJS CLI and the Langium generator CLI.
+```bash
+npm install -g @nestjs/cli
+npm install -g langium-cli
+```
+
+2. Generate parser for the Langium grammar
 ```bash
 yarn workspace langium-core langium:generate
 ```
 
-- Start the editor
+3. Build the common packages
+```bash
+yarn workspace langium-core build
+yarn workspace toolbox-api build
+```
+
+4. Start the editor
 ```bash
 yarn workspace editor dev
 ```
@@ -15,12 +27,6 @@ yarn workspace editor dev
 - Start the server
 ```bash
 yarn workspace interpreter dev
-```
-
-- When you edit the endpoint, update the tsoa router and OpenAPI specs
-```bash
-yarn workspace interpreter tsoa routes
-yarn workspace interpreter tsoa spec
 ```
 
 # Meta Solver Strategy Language
