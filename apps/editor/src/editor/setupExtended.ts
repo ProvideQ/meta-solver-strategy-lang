@@ -3,8 +3,8 @@ import { configureWorker, defineUserServices } from './setupCommon';
 
 export const setupConfigExtended = (): UserConfig => {
     const extensionFilesOrContents = new Map();
-    extensionFilesOrContents.set('/language-configuration.json', new URL('../language-configuration.json', import.meta.url));
-    extensionFilesOrContents.set('/meta-solver-strategy-grammar.json', new URL('../syntaxes/meta-solver-strategy.tmLanguage.json', import.meta.url));
+    extensionFilesOrContents.set('/language-configuration.json', new URL('./language-configuration.json', import.meta.url));
+    extensionFilesOrContents.set('/meta-solver-strategy-grammar.json', new URL('./syntaxes/meta-solver-strategy.tmLanguage.json', import.meta.url));
 
     return {
         wrapperConfig: {

@@ -41,15 +41,17 @@
                     "Meta Solver Strategy",
                     "meta-solver-strategy"
                 ],
-                "extensions": [".mss"],
-                "configuration": "./apps/editor/language-configuration.json"
+                "extensions": [
+                    ".mss"
+                ],
+                "configuration": "./apps/editor/src/editor/language-configuration.json"
             }
         ],
         "grammars": [
             {
                 "language": "meta-solver-strategy",
                 "scopeName": "source.meta-solver-strategy",
-                "path": "./apps/editor/syntaxes/meta-solver-strategy.tmLanguage.json"
+                "path": "./apps/editor/src/editor/syntaxes/meta-solver-strategy.tmLanguage.json"
             }
         ]
     },

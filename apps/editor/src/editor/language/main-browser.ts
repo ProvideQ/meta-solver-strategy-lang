@@ -2,7 +2,7 @@ import { EmptyFileSystem } from 'langium';
 import { startLanguageServer } from 'langium/lsp';
 import { BrowserMessageReader, BrowserMessageWriter, createConnection } from 'vscode-languageserver/browser.js';
 import { createMetaSolverStrategyServices } from 'langium-core';
-import { toolboxApi } from '../api.ts';
+import { toolboxApi } from '../../api';
 
 declare const self: DedicatedWorkerGlobalScope;
 
