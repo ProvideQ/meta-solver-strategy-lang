@@ -19,9 +19,14 @@ export class MetaSolverStrategyHoverProvider extends MultilineCommentHoverProvid
                     return undeclaredAstNodeResult;
                 }
 
-                const targetNode = this.references.findDeclaration(cstNode);
-                if (targetNode) {
-                    return this.getAstNodeHoverContent(targetNode);
+                const targetNodes = this.references.findDeclarations(cstNode);
+                if (targetNodes.length > 0) {
+                    return {
+                        contents: {
+                            value: await resolveMaybePromise(this.getAstNodeHoverContent(targetNodes[0])) ?? "",
+                            kind: "markdown"
+                        }
+                    };
                 }
 
                 // Add support for documentation on keywords
@@ -35,7 +40,7 @@ export class MetaSolverStrategyHoverProvider extends MultilineCommentHoverProvid
 
     protected async getUndeclaredAstNodeHoverContent(node: AstNode): Promise<MaybePromise<Hover | undefined>> {
         switch (node.$type) {
-            case ProblemType: {
+            case ProblemType.$type: {
                 const problemType: ProblemType = node as ProblemType;
                 const type = toolboxApi.getProblemType(problemType.problemType);
                 if (type) {
@@ -49,7 +54,7 @@ ${type.description}`
                 }
                 break;
             }
-            case SolverID: {
+            case SolverID.$type: {
                 const solverId: SolverID = node as SolverID;
                 const problemType = getProblemTypeBySolverId(toolboxApi, solverId);
                 if (!problemType) break;
@@ -70,7 +75,7 @@ ${solver.description}`
 
                 break;
             }
-            case SolverSetting: {
+            case SolverSetting.$type: {
                 const solverSetting: SolverSetting = node as SolverSetting;
                 const solverId = solverSetting.$container.solverId;
                 if (!solverId) break;
@@ -98,34 +103,24 @@ ${setting.description}`
         return undefined;
     }
 
-    protected override getAstNodeHoverContent(node: AstNode): MaybePromise<Hover | undefined> {
+    protected override getAstNodeHoverContent(node: AstNode): MaybePromise<string | undefined> {
         switch (node.$type) {
-            case ProblemArrayName: {
+            case ProblemArrayName.$type: {
                 const problemArrayName: ProblemArrayName = node as ProblemArrayName;
                 const problemTypeId = problemArrayName.$container.problemTypes?.problemType.problemType;
                 const problemType = toolboxApi.getProblemType(problemTypeId);
                 if (problemType) {
-                    return {
-                        contents: {
-                            kind: 'markdown',
-                            value: `**Array of Instances of Problem Type: ${problemType.id}**\n\n
-${problemType.description}`
-                        }
-                    };
+                    return `**Array of Instances of Problem Type: ${problemType.id}**\n\n
+${problemType.description}`;
                 }
                 break;
             }
-            case ProblemName: {
+            case ProblemName.$type: {
                 const problemName: ProblemName = node as ProblemName;
                 const problemType = getProblemTypeByProblemName(toolboxApi, problemName);
                 if (problemType) {
-                    return {
-                        contents: {
-                            kind: 'markdown',
-                            value: `**Instance of Problem Type: ${problemType.id}**\n\n
-${problemType.description}`
-                        }
-                    };
+                    return `**Instance of Problem Type: ${problemType.id}**\n\n
+${problemType.description}`;
                 }
                 break;
             }

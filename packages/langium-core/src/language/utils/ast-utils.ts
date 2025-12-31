@@ -6,12 +6,10 @@ export function getProblemTypeByProblemName(api: ToolboxApi, problemName: Proble
     const definitionContainer = problemName.$container;
     if (definitionContainer === undefined) return;
 
-    if (definitionContainer.$type === SolveProblem) {
-        const solveProblem: SolveProblem = definitionContainer as SolveProblem;
-        return api.getProblemType(solveProblem.problemType?.problemType);
-    } else if (definitionContainer.$type === Foreach) {
-        const foreach: Foreach = definitionContainer as Foreach;
-        return api.getProblemType(foreach.collection.ref?.$container.problemTypes?.problemType.problemType);
+    if (definitionContainer.$type === SolveProblem.$type) {
+        return api.getProblemType(definitionContainer.problemType?.problemType);
+    } else if (definitionContainer.$type === Foreach.$type) {
+        return api.getProblemType(definitionContainer.collection.ref?.$container.problemTypes?.problemType.problemType);
     }
 
     return undefined;
@@ -24,9 +22,9 @@ export function getProblemTypeBySolverId(api: ToolboxApi, solverId: SolverID): P
 }
 
 export function getProblemType(api: ToolboxApi, astNode: AstNode): ProblemTypeDto | undefined {
-    if (astNode.$type === SolverID) {
+    if (astNode.$type === SolverID.$type) {
         return getProblemTypeBySolverId(api, astNode as SolverID);
-    } else if (astNode.$type === Solver) {
+    } else if (astNode.$type === Solver.$type) {
         const solver: Solver = astNode as Solver;
         if (solver.solverId) {
             return getProblemTypeBySolverId(api, solver.solverId);
@@ -36,10 +34,10 @@ export function getProblemType(api: ToolboxApi, astNode: AstNode): ProblemTypeDt
                 return getProblemTypeByProblemName(api, problemName)
             }
         }
-    } else if (astNode.$type === SubRoutines) {
+    } else if (astNode.$type === SubRoutines.$type) {
         const subRoutines: SubRoutines = astNode as SubRoutines;
         return getProblemTypeBySolverId(api, subRoutines.$container.solverId);
-    } else if (astNode.$type === Expression) {
+    } else if (astNode.$type === Expression.$type) {
         const expression: Expression = astNode as Expression;
         const problemName = expression.problemName?.ref;
         if (!problemName) return undefined;
@@ -50,12 +48,12 @@ export function getProblemType(api: ToolboxApi, astNode: AstNode): ProblemTypeDt
 }
 
 export function getSolverIdNode(astNode: AstNode): SolverID | undefined {
-    if (astNode.$type === SolverID) {
+    if (astNode.$type === SolverID.$type) {
         return astNode as SolverID;
-    } else if (astNode.$type === Solver) {
+    } else if (astNode.$type === Solver.$type) {
         const solver: Solver = astNode as Solver;
         return solver.solverId;
-    } else if (astNode.$type === SubRoutines) {
+    } else if (astNode.$type === SubRoutines.$type) {
         const subRoutines: SubRoutines = astNode as SubRoutines;
         return subRoutines.$container.solverId;
     }
@@ -63,9 +61,9 @@ export function getSolverIdNode(astNode: AstNode): SolverID | undefined {
 }
 
 export function getProblemTypeNode(astNode: AstNode): ProblemType | undefined {
-    if (astNode.$type === ProblemType) {
+    if (astNode.$type === ProblemType.$type) {
         return astNode as ProblemType;
-    } else if (astNode.$type === SolveProblem) {
+    } else if (astNode.$type === SolveProblem.$type) {
         const solveProblem: SolveProblem = astNode as SolveProblem;
         if (solveProblem.problemType) {
             return solveProblem.problemType;
