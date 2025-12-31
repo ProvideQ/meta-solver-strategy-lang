@@ -1,7 +1,7 @@
-import { ProblemState } from "./ProblemState.ts";
-import { getInvalidSolutionObject, SolutionObject } from "./SolutionObject.ts";
-import { SolverSetting } from "./SolverSettings.ts";
-import { SubRoutineReferenceDto } from "./SubRoutineReferenceDto.ts";
+import { ProblemState } from "./ProblemState.js";
+import { getInvalidSolutionObject, SolutionObject } from "./SolutionObject.js";
+import { SolverSetting } from "./SolverSettings.js";
+import { SubRoutineReferenceDto } from "./SubRoutineReferenceDto.js";
 
 export interface ProblemDto<T> {
   id: string;

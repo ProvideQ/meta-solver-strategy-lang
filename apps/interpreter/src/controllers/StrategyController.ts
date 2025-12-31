@@ -1,6 +1,6 @@
 import { Controller, Post, Get, Patch, Body, Param, Query, Delete, HttpException, HttpStatus } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
-import { solve, inferProblemTypeIdFromCode, MetaSolverStrategy } from '../interpreter.ts';
+import { solve, inferProblemTypeIdFromCode, MetaSolverStrategy } from '../interpreter.js';
 import {
     ApiTags,
     ApiOperation,

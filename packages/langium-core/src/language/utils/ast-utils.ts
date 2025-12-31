@@ -1,6 +1,16 @@
-import { ComparisonOperator, Expression, Foreach, ProblemName, ProblemType, SolveProblem, Solver, SolverID, SubRoutines } from '../generated/ast.ts';
-import { AstNode } from "langium";
-import { ProblemTypeDto, ToolboxApi } from 'toolbox-api';
+import {
+    ComparisonOperator,
+    Expression,
+    Foreach,
+    ProblemName,
+    ProblemType,
+    SolveProblem,
+    Solver,
+    SolverID,
+    SubRoutines
+} from '../generated/ast.js';
+import {AstNode} from "langium";
+import {ProblemTypeDto, ToolboxApi} from 'toolbox-api';
 
 export function getProblemTypeByProblemName(api: ToolboxApi, problemName: ProblemName): ProblemTypeDto | undefined {
     const definitionContainer = problemName.$container;

@@ -1,8 +1,8 @@
 import { type ValidationAcceptor, type ValidationChecks } from 'langium';
-import type { MetaSolverStrategyServices } from 'langium-core/src/language/meta-solver-strategy-module.ts';
-import { toolboxApi } from "./meta-solver-strategy-module.ts";
-import { MetaSolverStrategyAstType, ProblemType, ProblemTypes, SolverID, ProblemAttribute, BoolExpression, Solver, SolverSetting, SolveProblem } from './generated/ast.ts';
-import { getProblemTypeBySolverId, getProblemTypeByProblemName, getApplicableTypes, getType } from './utils/ast-utils.ts';
+import type { MetaSolverStrategyServices } from 'langium-core/src/language/meta-solver-strategy-module.js';
+import { toolboxApi } from "./meta-solver-strategy-module.js";
+import { MetaSolverStrategyAstType, ProblemType, ProblemTypes, SolverID, ProblemAttribute, BoolExpression, Solver, SolverSetting, SolveProblem } from './generated/ast.js';
+import { getProblemTypeBySolverId, getProblemTypeByProblemName, getApplicableTypes, getType } from './utils/ast-utils.js';
 
 /**
  * Register custom validation checks.

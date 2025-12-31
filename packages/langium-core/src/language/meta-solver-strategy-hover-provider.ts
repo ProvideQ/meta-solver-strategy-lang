@@ -1,9 +1,31 @@
 import { MultilineCommentHoverProvider } from "langium/lsp";
 import { AstNode, LangiumDocument, MaybePromise, CstUtils, GrammarAST, } from "langium";
 import { Hover, type HoverParams } from "vscode-languageserver";
-import { toolboxApi } from "./meta-solver-strategy-module.ts";
-import { ProblemType, SolverID, SolverSetting, ProblemArrayName, ProblemName } from "./generated/ast.ts";
-import { getProblemTypeBySolverId, getProblemTypeByProblemName } from "./utils/ast-utils.ts";
+import { toolboxApi } from "./meta-solver-strategy-module.js";
+import { ProblemType, SolverID, SolverSetting, ProblemArrayName, ProblemName } from "./generated/ast.js";
+import { getProblemTypeBySolverId, getProblemTypeByProblemName } from "./utils/ast-utils.js";
+
+async function resolveMaybePromise<T>(input: MaybePromise<T>): Promise<T> {
+    switch (typeof input) {
+        case 'object':
+            // Check if the input is a promise
+            if (input && 'then' in input) {
+                return await input; // Await the promise
+            }
+            // If it's not a promise but an object, return it directly
+            return input;
+        case 'function': {
+            // If the input is a function, invoke it (assumed to return T or Promise<T>)
+            const result = input();
+            if (result && 'then' in result) {
+                return await result; // Await the result if it's a promise
+            }
+            return result;
+        } // Directly return the result
+        default:
+            throw new Error(`Unsupported type: ${typeof input}`);
+    }
+}
 
 export class MetaSolverStrategyHoverProvider extends MultilineCommentHoverProvider {
     public override async getHoverContent(document: LangiumDocument, params: HoverParams): Promise<Hover | undefined> {

@@ -2,10 +2,11 @@
   "name": "langium-core",
   "version": "1.0.0",
   "private": true,
-  "main": "src/index.ts",
+  "main": "index.ts",
   "scripts": {
     "langium:generate": "langium generate",
-    "langium:generate:production": "langium generate --mode=production"
+    "langium:generate:production": "langium generate --mode=production",
+    "build": "tsc -b"
   },
   "dependencies": {
     "langium": "~4.1.2",

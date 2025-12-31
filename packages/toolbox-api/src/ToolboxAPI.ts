@@ -1,9 +1,9 @@
-import { getInvalidProblemDto, ProblemDto } from "./data-model/ProblemDto.ts";
-import { ProblemSolverInfo } from "./data-model/ProblemSolverInfo.ts";
-import { ProblemState } from "./data-model/ProblemState.ts";
-import { SolverSetting } from "./data-model/SolverSettings.ts";
-import { ProblemTypeDto } from "./data-model/ProblemTypeDto.js";
-import { SubRoutineDefinitionDto } from "./data-model/SubRoutineDefinitionDto.ts";
+import {getInvalidProblemDto, ProblemDto} from "./data-model/ProblemDto.js";
+import {ProblemSolverInfo} from "./data-model/ProblemSolverInfo.js";
+import {ProblemState} from "./data-model/ProblemState.js";
+import {SolverSetting} from "./data-model/SolverSettings.js";
+import {ProblemTypeDto} from "./data-model/ProblemTypeDto.js";
+import {SubRoutineDefinitionDto} from "./data-model/SubRoutineDefinitionDto.js";
 
 const problemTypes: ProblemTypeDto[] = [];
 
@@ -15,10 +15,8 @@ export class ToolboxApi {
     }
 
     async initialize() {
-        if (problemTypes.length > 0) {
-            // Already initialized
-            return;
-        }
+        if (problemTypes.length > 0) return;
+
         let newTypes = await this.getProblemTypes();
         problemTypes.push(...newTypes);
     }
@@ -36,9 +34,8 @@ export class ToolboxApi {
         })
             .then(response => response.json())
             .then((json) => json as ProblemTypeDto[])
-            .catch((reason) => {
-                console.error(reason);
-                alert("Could not retrieve problem types.");
+            .catch((error) => {
+                console.error("Could not retrieve problem types " + this.baseUrl + "/problem-types", error);
                 return [];
             });
     }
@@ -52,9 +49,8 @@ export class ToolboxApi {
         })
             .then(async (response) => response.json())
             .then((json) => json as ProblemSolverInfo[])
-            .catch((reason) => {
-                console.error(reason);
-                alert(`Could not retrieve solvers of type ${problemTypeId}.`);
+            .catch((error) => {
+                console.error(`Could not retrieve solvers of type ${problemTypeId}`, error);
                 return [];
             });
     }
@@ -70,9 +66,9 @@ export class ToolboxApi {
             }
         )
             .then((response) => response.json())
-            .catch((reason) => {
-                console.error(reason);
-                alert(`Could not retrieve subroutines of solver ${solverId}.`);
+            .then((json) => json as SubRoutineDefinitionDto[])
+            .catch((error) => {
+                console.error(`Could not retrieve subroutines of solver ${solverId}`, error);
                 return [];
             });
     }
@@ -85,9 +81,9 @@ export class ToolboxApi {
             },
         })
             .then((response) => response.json())
-            .catch((reason) => {
-                console.error(reason);
-                alert(`Could not retrieve subroutines of solver ${solverId}.`);
+            .then((json) => json as SolverSetting[])
+            .catch((error) => {
+                console.error(`Could not retrieve subroutines of solver ${solverId}`, error);
                 return [];
             });
     }
@@ -112,10 +108,10 @@ export class ToolboxApi {
                 }
                 return data;
             })
-            .catch((reason) => {
+            .catch((error) => {
                 return {
                     ...getInvalidProblemDto(),
-                    error: `${reason}`,
+                    error: `${error}`,
                 };
             });
     }
@@ -130,10 +126,10 @@ export class ToolboxApi {
         })
             .then((response) => response.json())
             .then((json) => json as ProblemDto<T>)
-            .catch((reason) => {
+            .catch((error) => {
                 return {
                     ...problemRequest,
-                    error: `${reason}`,
+                    error: `${error}`,
                 };
             });
     }
@@ -153,10 +149,10 @@ export class ToolboxApi {
         })
             .then((response) => response.json())
             .then((json) => json as ProblemDto<T>)
-            .catch((reason) => {
+            .catch((error) => {
                 return {
                     ...getInvalidProblemDto(),
-                    error: `${reason}`,
+                    error: `${error}`,
                 };
             });
     }
@@ -169,11 +165,9 @@ export class ToolboxApi {
             },
         })
             .then((response) => response.json())
-            .catch((reason) => {
-                console.error(reason);
-                alert(`Could not retrieve attribute ${attributeName} of problem ${problemId}.`);
+            .catch((error) => {
+                console.error(`Could not retrieve attribute ${attributeName} of problem ${problemId}`, error);
                 return undefined;
             });
-
     }
 }

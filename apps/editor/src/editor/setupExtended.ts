@@ -1,5 +1,5 @@
 import { MonacoEditorLanguageClientWrapper, UserConfig } from 'monaco-editor-wrapper';
-import { configureWorker, defineUserServices } from './setupCommon.js';
+import { configureWorker, defineUserServices } from './setupCommon';
 
 export const setupConfigExtended = (): UserConfig => {
     const extensionFilesOrContents = new Map();

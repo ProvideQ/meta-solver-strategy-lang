@@ -1,8 +1,8 @@
 import { startLanguageServer } from 'langium/lsp';
 import { NodeFileSystem } from 'langium/node';
 import { createConnection, ProposedFeatures } from 'vscode-languageserver/node.js';
-import { createMetaSolverStrategyServices } from 'langium-core/src/language/meta-solver-strategy-module.ts';
 import { toolboxApi } from '../api.ts';
+import { createMetaSolverStrategyServices } from 'langium-core/src/language/meta-solver-strategy-module.js';
 
 // Create a connection to the client
 const connection = createConnection(ProposedFeatures.all);

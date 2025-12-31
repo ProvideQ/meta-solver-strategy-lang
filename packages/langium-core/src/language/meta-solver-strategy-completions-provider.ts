@@ -1,16 +1,16 @@
 import { CompletionAcceptor, CompletionContext, CompletionValueItem, DefaultCompletionProvider, NextFeature } from "langium/lsp";
 import { CompletionItemKind } from "vscode-languageserver";
 import { GrammarAST } from "langium";
-import { toolboxApi } from "./meta-solver-strategy-module.ts";
-import { ProblemType, SolverID, ProblemAttribute, Expression } from "./generated/ast.ts";
-import { getProblemTypeNode, getProblemType, getSolverIdNode } from "./utils/ast-utils.ts";
+import { toolboxApi } from "./meta-solver-strategy-module.js";
+import { ProblemType, SolverID, ProblemAttribute, Expression } from "./generated/ast.js";
+import { getProblemTypeNode, getProblemType, getSolverIdNode } from "./utils/ast-utils.js";
 
 export class MetaSolverStrategyCompletionsProvider extends DefaultCompletionProvider {
     protected override async completionFor(context: CompletionContext, next: NextFeature, acceptor: CompletionAcceptor): Promise<void> {
         if (context.node === undefined) return;
 
         switch (next.type) {
-            case ProblemType:
+            case ProblemType.$type: {
                 await toolboxApi.initialize();
                 const problemTypeNode = getProblemTypeNode(context.node);
                 // Use the ToolboxApi instance's problemTypes if available, otherwise fallback to []
@@ -22,7 +22,7 @@ export class MetaSolverStrategyCompletionsProvider extends DefaultCompletionProv
                     };
                     if (problemTypeNode) {
                         value.textEdit = {
-                            range: problemTypeNode!.$cstNode!.range,
+                            range: problemTypeNode.$cstNode!.range,
                             newText: problemType.id,
                         };
                     } else {
@@ -31,7 +31,8 @@ export class MetaSolverStrategyCompletionsProvider extends DefaultCompletionProv
                     acceptor(context, value)
                 }
                 break;
-            case SolverID:
+            }
+            case SolverID.$type: {
                 const problemType = getProblemType(toolboxApi, context.node);
                 if (problemType === undefined) return;
 
@@ -44,7 +45,8 @@ export class MetaSolverStrategyCompletionsProvider extends DefaultCompletionProv
 
                     let insertText = `${solver.id}()`;
                     if (settings.length > 0) {
-                        insertText = `${solver.id}(\n${settings.map((setting: any) => `\t"${setting.name}" = "\${${snippetJumpIndex++}}"`).join(",\n")})`;
+                        const settingsText = settings.map((setting: any) => `\t"${setting.name}" = "\${${snippetJumpIndex++}}"`).join(",\n");
+                        insertText = `${solver.id}(\n${settingsText})`;
                         // TODO: support auto complete for select settings
                     }
 
@@ -68,7 +70,7 @@ export class MetaSolverStrategyCompletionsProvider extends DefaultCompletionProv
                     };
                     if (solverId) {
                         value.textEdit = {
-                            range: solverId?.$cstNode!.range ?? context.node!.$cstNode!.range,
+                            range: solverId?.$cstNode!.range ?? context.node.$cstNode!.range,
                             newText: insertText,
                         };
                     } else {
@@ -78,7 +80,8 @@ export class MetaSolverStrategyCompletionsProvider extends DefaultCompletionProv
                     acceptor(context, value)
                 }
                 break;
-            case ProblemAttribute: {
+            }
+            case ProblemAttribute.$type: {
                 const problemType = getProblemType(toolboxApi, context.node);
                 if (problemType === undefined) return;
 
