@@ -1,0 +1,25 @@
+﻿services:
+  editor:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      args:
+        - BUILD_CONTEXT=editor
+    ports:
+      - "4173:4173"
+    environment:
+      - VITE_API_BASE_URL=http://host.docker.internal:8080
+    depends_on:
+      - interpreter
+
+  interpreter:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      args:
+        - BUILD_CONTEXT=interpreter
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - TOOLBOX_API_URL=http://host.docker.internal:8080
