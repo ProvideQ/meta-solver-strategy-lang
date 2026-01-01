@@ -4898,21 +4898,21 @@ __metadata:
 
 "langium-core@file:../../packages/langium-core/dist::locator=editor%40workspace%3Aapps%2Feditor":
   version: 1.0.0
-  resolution: "langium-core@file:../../packages/langium-core/dist#../../packages/langium-core/dist::hash=224b5d&locator=editor%40workspace%3Aapps%2Feditor"
+  resolution: "langium-core@file:../../packages/langium-core/dist#../../packages/langium-core/dist::hash=ca5dd8&locator=editor%40workspace%3Aapps%2Feditor"
   dependencies:
     langium: "npm:~4.1.2"
     toolbox-api: "npm:*"
-  checksum: 10c0/96c27db2c1763fd668a30fbf0656933cb0a452cfca15dfe04f47d4bd79894f7f48ed653cb7ba55df4bc191311efbae6a5019bdba761a814ac70dc1e61c0087e4
+  checksum: 10c0/8d72c6d6cbb74d9e0b51d919704022568439da1a29555afc9b6e09c27c53a1ab0ec23326e16574f3f7301297d26d100b0165a094078195589144df365305c299
   languageName: node
   linkType: hard
 
 "langium-core@file:../../packages/langium-core/dist::locator=interpreter%40workspace%3Aapps%2Finterpreter":
   version: 1.0.0
-  resolution: "langium-core@file:../../packages/langium-core/dist#../../packages/langium-core/dist::hash=224b5d&locator=interpreter%40workspace%3Aapps%2Finterpreter"
+  resolution: "langium-core@file:../../packages/langium-core/dist#../../packages/langium-core/dist::hash=ca5dd8&locator=interpreter%40workspace%3Aapps%2Finterpreter"
   dependencies:
     langium: "npm:~4.1.2"
     toolbox-api: "npm:*"
-  checksum: 10c0/96c27db2c1763fd668a30fbf0656933cb0a452cfca15dfe04f47d4bd79894f7f48ed653cb7ba55df4bc191311efbae6a5019bdba761a814ac70dc1e61c0087e4
+  checksum: 10c0/8d72c6d6cbb74d9e0b51d919704022568439da1a29555afc9b6e09c27c53a1ab0ec23326e16574f3f7301297d26d100b0165a094078195589144df365305c299
   languageName: node
   linkType: hard
 
@@ -6605,15 +6605,15 @@ __metadata:
 
 "toolbox-api@file:../../packages/toolbox-api/dist::locator=editor%40workspace%3Aapps%2Feditor":
   version: 1.0.0
-  resolution: "toolbox-api@file:../../packages/toolbox-api/dist#../../packages/toolbox-api/dist::hash=e468b8&locator=editor%40workspace%3Aapps%2Feditor"
-  checksum: 10c0/d9b1745119c7dc0b64d2afbdbd1b5a7d814336f2eb632d4a42da53ed4eb9789167b3eb83255659221ad35e179ab6eb52b0bd804aed4b1b5ef4b1ce7036c3093d
+  resolution: "toolbox-api@file:../../packages/toolbox-api/dist#../../packages/toolbox-api/dist::hash=369d78&locator=editor%40workspace%3Aapps%2Feditor"
+  checksum: 10c0/27106c46173449dc1d109956a41d548b83122f18e3ff6d38a0ba587b0b5140be4b206a2c24b13f6d6a6b8e4a9427c87e33c24b00aab5b3a958dd2a3c05c492ce
   languageName: node
   linkType: hard
 
 "toolbox-api@file:../../packages/toolbox-api/dist::locator=interpreter%40workspace%3Aapps%2Finterpreter":
   version: 1.0.0
-  resolution: "toolbox-api@file:../../packages/toolbox-api/dist#../../packages/toolbox-api/dist::hash=e468b8&locator=interpreter%40workspace%3Aapps%2Finterpreter"
-  checksum: 10c0/d9b1745119c7dc0b64d2afbdbd1b5a7d814336f2eb632d4a42da53ed4eb9789167b3eb83255659221ad35e179ab6eb52b0bd804aed4b1b5ef4b1ce7036c3093d
+  resolution: "toolbox-api@file:../../packages/toolbox-api/dist#../../packages/toolbox-api/dist::hash=369d78&locator=interpreter%40workspace%3Aapps%2Finterpreter"
+  checksum: 10c0/27106c46173449dc1d109956a41d548b83122f18e3ff6d38a0ba587b0b5140be4b206a2c24b13f6d6a6b8e4a9427c87e33c24b00aab5b3a958dd2a3c05c492ce
   languageName: node
   linkType: hard
 
