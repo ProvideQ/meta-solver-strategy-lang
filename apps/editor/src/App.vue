@@ -48,6 +48,7 @@
           v-model:name="strategyName"
           :status="statusMessage"
           @save="saveStrategy"
+          @save:new="saveAsNewStrategy"
         />
 
         <div class="flex-1 bg-white rounded-lg shadow-card border border-app-border flex flex-col">
@@ -219,6 +220,18 @@ async function saveStrategy() {
   } catch (err: any) {
     statusMessage.value = 'Save failed: ' + err.message;
   }
+}
+
+async function saveAsNewStrategy() {
+  const name = strategyName.value?.trim();
+  const code = editorWrapper ? editorWrapper.getEditor().getValue() : '';
+
+  createNewStrategy();
+
+  strategyName.value = name;
+  editorWrapper.getEditor().setValue(code);
+
+  await saveStrategy();
 }
 
 onMounted(async () => {

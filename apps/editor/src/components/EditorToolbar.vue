@@ -6,6 +6,12 @@
     >
       Save
     </button>
+    <button
+      @click="emit('save:new')"
+      class="px-4 py-2 text-sm font-medium text-white bg-app-accent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-app-accent focus:ring-offset-1 transition"
+    >
+      Save as New
+    </button>
 
     <div class="flex-1 relative">
       <input
@@ -38,6 +44,7 @@ defineProps<Props>();
 const emit = defineEmits<{
   'update:name': [value: string];
   save: [];
+  'save:new': [];
 }>();
 
 function updateName(event: Event) {
