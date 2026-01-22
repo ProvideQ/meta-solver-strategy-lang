@@ -8,7 +8,9 @@ import * as path from 'node:path';
 const port = process.env.PORT ? Number.parseInt(process.env.PORT, 10) : 5000;
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, );
+  const app = await NestFactory.create(AppModule);
+
+  app.enableCors();
 
   // Dynamic import of swagger to avoid static type resolution issues in this workspace
   try {
