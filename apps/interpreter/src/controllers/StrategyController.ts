@@ -13,6 +13,7 @@ import {
     ApiCreatedResponse,
     ApiProperty,
 } from '@nestjs/swagger';
+import { ProblemDto } from "toolbox-api";
 
 export class MetaSolverStrategyInput {
     @ApiProperty({ description: 'Strategy source code', type: String })
@@ -155,7 +156,7 @@ export class StrategyController {
     public async executeStrategy(
         @Param('strategyId') strategyId: string,
         @Body() body: ExecuteStrategyInput
-    ): Promise<{ result: any }> {
+    ): Promise<{ result: ProblemDto<any> | undefined }> {
         const strategy = StrategyController.strategies.get(strategyId);
         if (!strategy) {
             throw new HttpException('Strategy not found', HttpStatus.NOT_FOUND);
