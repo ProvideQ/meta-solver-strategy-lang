@@ -2,7 +2,7 @@
   "name": "toolbox-api",
   "version": "1.0.0",
   "private": true,
-  "main": "index.ts",
+  "main": "dist/index.js",
   "scripts": {
     "build": "tsc -b"
   },

@@ -1,32 +1,46 @@
-# Editor Setup
+# Setup
 
-1. Install the NestJS CLI and the Langium generator CLI.
+1. Install pnpm (via Corepack or npm) and developer CLIs used during development.
 ```bash
-npm install -g @nestjs/cli
-npm install -g langium-cli
+# Enable Corepack and activate pnpm
+corepack enable; corepack prepare pnpm@8.8.0 --activate
 ```
 
-2. Generate parser for the Langium grammar
 ```bash
-yarn workspace langium-core langium:generate
+# or install pnpm via npm
+npm install -g pnpm
 ```
 
-3. Build the common packages
+2. Install the NestJS CLI and the Langium generator CLI.
 ```bash
-yarn workspace langium-core build
-yarn workspace toolbox-api build
+pnpm add -g @nestjs/cli langium-cli
 ```
 
-4. Start the editor
+3. Generate parser for the Langium grammar
 ```bash
-yarn workspace editor dev
+pnpm langium
 ```
 
-# Interpreter Setup
-
-- Start the server
+4. Build shared packages
 ```bash
-yarn workspace interpreter dev
+pnpm build:packages
+```
+
+5. Install all workspace dependencies (full workspace)
+```bash
+pnpm install -w
+```
+
+6. Start the editor ui
+```bash
+pnpm build:editor
+pnpm --filter ./apps/editor run dev
+```
+
+7. Start the interpreter server
+```bash
+pnpm build:interpreter
+pnpm --filter ./apps/interpreter run dev
 ```
 
 # Meta Solver Strategy Language

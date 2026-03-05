@@ -4,20 +4,21 @@
     "version": "0.0.1",
     "private": true,
     "type": "module",
-    "workspaces": [
-        "apps/*",
-        "packages/*"
-    ],
     "dependencies": {
         "@types/node": "^24.10.1"
     },
     "scripts": {
-        "dev": "yarn workspaces run dev",
-        "build": "yarn workspaces run build",
-        "start": "yarn workspaces run start",
-        "lint": "yarn workspaces run lint",
-        "test": "yarn workspaces run test"
+        "dev": "pnpm -r run dev",
+        "build": "pnpm -r run build",
+        "build:packages": "pnpm install --filter ./packages/toolbox-api... && pnpm --filter ./packages/toolbox-api... run build && pnpm install --filter ./packages/langium-core... && pnpm --filter ./packages/langium-core... run build",
+        "build:editor": "pnpm install && pnpm --filter ./apps/editor... run build",
+        "build:interpreter": "pnpm install && pnpm --filter ./apps/interpreter... run build",
+        "start": "pnpm -r run start",
+        "lint": "pnpm -r run lint",
+        "test": "pnpm -r run test",
+        "langium": "pnpm --filter ./packages/langium-core... run langium:generate"
     },
+    "packageManager": "pnpm@10.30.3",
     "devDependencies": {
         "@types/express": "^4.17.25",
         "@types/node": "^24.10.1",

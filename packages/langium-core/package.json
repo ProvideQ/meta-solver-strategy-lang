@@ -2,7 +2,7 @@
   "name": "langium-core",
   "version": "1.0.0",
   "private": true,
-  "main": "index.ts",
+  "main": "dist/index.js",
   "scripts": {
     "langium:generate": "langium generate",
     "langium:generate:production": "langium generate --mode=production",
@@ -10,7 +10,9 @@
   },
   "dependencies": {
     "langium": "~4.1.2",
-    "toolbox-api": "*"
+    "toolbox-api": "workspace:*",
+    "typescript": "^5.9.3",
+    "vscode-languageserver": "~9.0.1"
   },
   "type": "module"
 }
