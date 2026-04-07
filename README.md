@@ -13,7 +13,7 @@ npm install -g pnpm
 
 2. Install the NestJS CLI and the Langium generator CLI.
 ```bash
-pnpm add -g @nestjs/cli langium-cli
+pnpm add -g @nestjs/cli langium-cli tsx
 ```
 
 3. Generate parser for the Langium grammar
