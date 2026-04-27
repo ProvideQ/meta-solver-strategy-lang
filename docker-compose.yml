@@ -5,10 +5,10 @@
       dockerfile: ./Dockerfile
       args:
         - BUILD_CONTEXT=editor
+        - VITE_API_BASE_URL=http://host.docker.internal:8080
+        - VITE_URL_INTERPRETER=http://host.docker.internal:5000
     ports:
       - "4173:4173"
-    environment:
-      - VITE_API_BASE_URL=http://host.docker.internal:8080
     depends_on:
       - interpreter
 

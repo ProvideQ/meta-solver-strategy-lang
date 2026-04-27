@@ -7,6 +7,12 @@ RUN pnpm add -g @nestjs/cli
 
 FROM base AS build
 ARG BUILD_CONTEXT
+ARG VITE_API_BASE_URL
+ARG VITE_URL_INTERPRETER
+
+# Expose build args as environment variables for build tools like Vite.
+ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
+ENV VITE_URL_INTERPRETER=${VITE_URL_INTERPRETER}
 
 WORKDIR /app
 
