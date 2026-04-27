@@ -5,7 +5,7 @@
   problemTypeId: string;
 }
 
-const baseUrl = 'http://localhost:5000';
+const baseUrl = import.meta.env.VITE_URL_INTERPRETER;
 
 export const strategyApi = {
   listStrategies: async (type = ""): Promise<Strategy[]> => {
