@@ -1,17 +1,19 @@
 ﻿<template>
-  <div class="flex items-center gap-3 mb-4">
-    <button
-      @click="emit('save')"
-      class="px-4 py-2 text-sm font-medium text-white bg-app-accent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-app-accent focus:ring-offset-1 transition"
-    >
-      Save
-    </button>
-    <button
-      @click="emit('save:new')"
-      class="px-4 py-2 text-sm font-medium text-white bg-app-accent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-app-accent focus:ring-offset-1 transition"
-    >
-      Save as New
-    </button>
+  <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+    <div class="flex gap-2">
+      <button
+        @click="emit('save')"
+        class="flex-1 sm:flex-none px-4 py-2 text-sm font-medium text-white bg-app-accent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-app-accent focus:ring-offset-1 transition"
+      >
+        Save
+      </button>
+      <button
+        @click="emit('save:new')"
+        class="flex-1 sm:flex-none px-4 py-2 text-sm font-medium text-white bg-app-accent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-app-accent focus:ring-offset-1 transition"
+      >
+        Save as New
+      </button>
+    </div>
 
     <div class="flex-1 relative">
       <input

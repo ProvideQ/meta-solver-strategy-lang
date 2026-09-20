@@ -1,19 +1,19 @@
 ﻿<template>
   <div class="min-h-screen bg-app-bg">
     <!-- Header -->
-    <header class="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
-      <div class="max-w-screen-2xl mx-auto px-6 py-4">
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
+      <div class="max-w-screen-2xl mx-auto px-3 sm:px-6 py-3 sm:py-4">
         <div class="flex items-center gap-3">
-          <img src="https://langium.org/assets/langium_logo_w_nib.svg" alt="Langium" class="h-8" />
-          <h1 class="text-xl font-semibold text-app-text">Meta Solver Strategy Editor</h1>
+          <img src="https://langium.org/assets/langium_logo_w_nib.svg" alt="Langium" class="h-7 sm:h-8" />
+          <h1 class="text-base sm:text-xl font-semibold text-app-text truncate">Meta Solver Strategy Editor</h1>
         </div>
       </div>
     </header>
 
     <!-- Main Content -->
-    <div class="max-w-screen-2xl mx-auto h-[calc(100vh-73px)] flex">
+    <div class="max-w-screen-2xl mx-auto flex flex-col md:flex-row md:h-[calc(100vh-73px)]">
       <!-- Sidebar -->
-      <aside class="w-96 bg-white border-r border-app-border p-6 overflow-y-auto">
+      <aside class="w-full md:w-96 bg-white md:border-r border-b md:border-b-0 border-app-border p-4 sm:p-6 overflow-y-auto">
         <ProblemTypeSelector
           :problem-types="problemTypes"
           :counts-by-type="countsByType"
@@ -43,17 +43,19 @@
       </aside>
 
       <!-- Main Editor Area -->
-      <main class="flex-1 flex flex-col p-6 bg-app-bg">
-        <EditorToolbar
-          v-model:name="strategyName"
-          :status="statusMessage"
-          @save="saveStrategy"
-          @save:new="saveAsNewStrategy"
-        />
+      <main class="flex-1 flex flex-col p-3 sm:p-6 bg-app-bg min-w-0">
+        <div class="sticky top-[61px] md:top-[73px] z-10 bg-app-bg -mx-3 sm:-mx-6 px-3 sm:px-6 pt-3 sm:pt-6 -mt-3 sm:-mt-6">
+          <EditorToolbar
+            v-model:name="strategyName"
+            :status="statusMessage"
+            @save="saveStrategy"
+            @save:new="saveAsNewStrategy"
+          />
+        </div>
 
-        <div class="flex-1 bg-white rounded-lg shadow-card border border-app-border flex flex-col">
+        <div class="flex-1 min-h-0 bg-white rounded-lg shadow-card border border-app-border flex flex-col">
           <div id="monaco-editor-root" class="flex-1"></div>
-          <div class="px-4 py-2 bg-gray-50 border-t border-app-border text-sm text-app-muted">
+          <div class="px-4 py-2 bg-gray-50 border-t border-app-border text-sm text-app-muted truncate">
             {{ statusMessage }}
           </div>
         </div>
