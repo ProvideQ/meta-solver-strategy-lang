@@ -119,7 +119,7 @@ For example, this `VRP` problem is solved with a standard solver if the problem 
 
 This enables users to create a vast amount of different Meta Solver Strategies built for various use cases.
 
-## Nested Meta Solver Strategy Calls (WIP)
+## Nested Meta Solver Strategy Calls
 ```
 solve SharpSAT sharpsat:
   if sharpsat.variable_count > 100:
@@ -137,3 +137,7 @@ solve SAT sat:
       sharpsat.SolveSharpSatWithGanak()
 ```
 Instead of writing the if/else statements or specific solver calls to define the strategy to solve the `SharpSAT` subroutine, we can also call a Meta Solver Strategy that solves `SharpSAT`.
+
+A saved Meta Solver Strategy is called with the same syntax as a solver call: `<problemName>.<StrategyName>()`. The autocomplete offers both solvers and saved Meta Solver Strategies for the current problem type. When a strategy is selected, it is executed recursively against the current problem.
+
+Strategy names must be unique per problem type so that a strategy call can be resolved unambiguously.

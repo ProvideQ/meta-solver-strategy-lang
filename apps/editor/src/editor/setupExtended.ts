@@ -27,6 +27,11 @@ export const setupConfigExtended = (): UserConfig => {
   else:
     vrp.LkhVrpSolver()`,
                 useDiffEditor: false,
+                editorOptions: {
+                    padding: {
+                        top: 8
+                    }
+                },
                 extensions: [{
                     config: {
                         name: 'meta-solver-strategy-web',

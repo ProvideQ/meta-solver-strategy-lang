@@ -58,7 +58,12 @@ export class MetaSolverStrategyValidator {
         if (solverId.solverId) {
             const solver = await toolboxApi.getSolver(problemTypeId.id, solverId.solverId);
             if (solver === undefined) {
-                accept('error', `Solver '${solverId.solverId}' does not exist.`, { node: solverId, property: "solverId" }); 
+                // The ID is not a solver, so it might be a saved meta solver strategy
+                const strategies = await toolboxApi.fetchStrategies(problemTypeId.id);
+                const strategy = strategies.find(s => s.name === solverId.solverId);
+                if (strategy === undefined) {
+                    accept('error', `Solver or  Meta Solver Strategy '${solverId.solverId}' does not exist for problem type '${problemTypeId.id}'.`, { node: solverId, property: "solverId" });
+                }
             }
         }
     }
@@ -133,6 +138,14 @@ export class MetaSolverStrategyValidator {
         const problemTypeId = getProblemTypeBySolverId(toolboxApi, solver.solverId);
         if (!problemTypeId) {
             accept('error', `Solver ID '${solverId}' is not associated with any problem type.`, { node: solver.solverId, property: "solverId" });
+            return;
+        }
+
+        // If the ID references a saved meta solver strategy instead of a solver,
+        // the sub-routine checks below do not apply.
+        const strategies = await toolboxApi.fetchStrategies(problemTypeId.id);
+        const isStrategyCall = strategies.some(s => s.name === solverId);
+        if (isStrategyCall) {
             return;
         }
 

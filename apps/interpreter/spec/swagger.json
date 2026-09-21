@@ -43,9 +43,7 @@
             "required": false,
             "in": "query",
             "description": "Filter by problemTypeId",
-            "schema": {
-              "type": "string"
-            }
+            "schema": {}
           }
         ],
         "responses": {
@@ -78,9 +76,7 @@
             "required": true,
             "in": "path",
             "description": "Strategy id",
-            "schema": {
-              "type": "string"
-            }
+            "schema": {}
           }
         ],
         "requestBody": {
@@ -124,9 +120,7 @@
             "required": true,
             "in": "path",
             "description": "Strategy id",
-            "schema": {
-              "type": "string"
-            }
+            "schema": {}
           }
         ],
         "responses": {
@@ -157,9 +151,7 @@
             "required": true,
             "in": "path",
             "description": "Strategy id",
-            "schema": {
-              "type": "string"
-            }
+            "schema": {}
           }
         ],
         "responses": {
@@ -185,9 +177,7 @@
             "required": true,
             "in": "path",
             "description": "Strategy id",
-            "schema": {
-              "type": "string"
-            }
+            "schema": {}
           }
         ],
         "requestBody": {

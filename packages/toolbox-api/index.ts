@@ -6,5 +6,6 @@ export * from './src/data-model/ProblemTypeDto.js';
 export * from './src/data-model/SolutionObject.js';
 export * from './src/data-model/SolutionStatus.js';
 export * from './src/data-model/SolverSettings.js';
+export * from './src/data-model/StrategyInfoDto.js';
 export * from './src/data-model/SubRoutineDefinitionDto.js';
 export * from './src/data-model/SubRoutineReferenceDto.js';

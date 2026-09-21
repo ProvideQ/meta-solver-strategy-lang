@@ -3,15 +3,18 @@ import {ProblemSolverInfo} from "./data-model/ProblemSolverInfo.js";
 import {ProblemState} from "./data-model/ProblemState.js";
 import {SolverSetting} from "./data-model/SolverSettings.js";
 import {ProblemTypeDto} from "./data-model/ProblemTypeDto.js";
+import {StrategyInfoDto} from "./data-model/StrategyInfoDto.js";
 import {SubRoutineDefinitionDto} from "./data-model/SubRoutineDefinitionDto.js";
 
 const problemTypes: ProblemTypeDto[] = [];
 
 export class ToolboxApi {
     baseUrl: string;
+    interpreterBaseUrl?: string;
 
-    constructor(baseUrl: string) {
+    constructor(baseUrl: string, interpreterBaseUrl?: string) {
         this.baseUrl = baseUrl;
+        this.interpreterBaseUrl = interpreterBaseUrl;
     }
 
     async initialize() {
@@ -47,7 +50,12 @@ export class ToolboxApi {
                 "Content-Type": "application/json",
             },
         })
-            .then(async (response) => response.json())
+            .then(async (response) => {
+                if (!response.ok) {
+                    return [];
+                }
+                return response.json();
+            })
             .then((json) => json as ProblemSolverInfo[])
             .catch((error) => {
                 console.error(`Could not retrieve solvers of type ${problemTypeId}`, error);
@@ -65,7 +73,12 @@ export class ToolboxApi {
                 },
             }
         )
-            .then((response) => response.json())
+            .then(async (response) => {
+                if (!response.ok) {
+                    return [];
+                }
+                return response.json();
+            })
             .then((json) => json as SubRoutineDefinitionDto[])
             .catch((error) => {
                 console.error(`Could not retrieve subroutines of solver ${solverId}`, error);
@@ -80,10 +93,47 @@ export class ToolboxApi {
                 "Content-Type": "application/json",
             },
         })
-            .then((response) => response.json())
+            .then(async (response) => {
+                if (!response.ok) {
+                    return [];
+                }
+                return response.json();
+            })
             .then((json) => json as SolverSetting[])
             .catch((error) => {
                 console.error(`Could not retrieve subroutines of solver ${solverId}`, error);
+                return [];
+            });
+    }
+
+    /**
+     * Fetches the meta solver strategies that have been saved in the interpreter
+     * backend. If no problem type is given, all strategies are returned.
+     *
+     * Requires the interpreter base URL to be configured, otherwise an empty
+     * list is returned.
+     */
+    async fetchStrategies(problemTypeId: string): Promise<StrategyInfoDto[]> {
+        if (!this.interpreterBaseUrl) {
+            return [];
+        }
+
+        const query = `?type=${encodeURIComponent(problemTypeId)}`;
+        return fetch(`${this.interpreterBaseUrl}/strategies${query}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        })
+            .then(async (response) => {
+                if (!response.ok) {
+                    return [];
+                }
+                return response.json();
+            })
+            .then((json) => json as StrategyInfoDto[])
+            .catch((error) => {
+                console.error(`Could not retrieve strategies of type ${problemTypeId}`, error);
                 return [];
             });
     }

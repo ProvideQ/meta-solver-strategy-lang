@@ -4,6 +4,7 @@ import { BoolExpression, createMetaSolverStrategyServices, Else, Expression, For
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 import { ProblemDto, ProblemState, SolverSetting as ApiSolverSetting, ToolboxApi } from "toolbox-api";
+import { strategyStore } from './strategy-store.js';
 
 const apiBaseUrl = process.env.TOOLBOX_API_URL;
 if (!apiBaseUrl) {
@@ -61,6 +62,30 @@ export async function solve(strategy: MetaSolverStrategy, problemId: string) {
     throw new Error("Unsupported root node type: " + result.$type);
 }
 
+/**
+ * Executes a nested meta solver strategy against a given problem.
+ *
+ * The strategy is parsed and its root solve statement is visited with a fresh
+ * context that carries over the visited strategy ids for cycle detection.
+ */
+async function solveStrategy(strategy: MetaSolverStrategy, problem: ProblemDto<any>, context: MetaSolverStrategyContext): Promise<ProblemDto<any> | undefined> {
+    const services = createMetaSolverStrategyServices(toolboxApi, NodeFileSystem).MetaSolverStrategy;
+    const doc = await extractDocument(strategy.code, services);
+    if (doc.parseResult.lexerErrors.length > 0 || doc.parseResult.parserErrors.length > 0) {
+        throw new Error("Failed to parse the document " + strategy.id + ". Lexer errors: " + doc.parseResult.lexerErrors.length + ", Parser errors: " + doc.parseResult.parserErrors.length);
+    }
+
+    const result = doc.parseResult.value;
+    if (result.$type === SolveProblem.$type) {
+        const node = result as SolveProblem;
+        if (node.problemType && node.problemName.$type === ProblemName.$type) {
+            return await visitSolveProblem(node, [problem], context);
+        }
+    }
+
+    throw new Error("Unsupported root node type: " + result.$type);
+}
+
 export interface MetaSolverStrategyContext {
     // Variable name -> solver id
     variables: Map<ProblemName, ProblemDto<any>>
@@ -105,6 +130,25 @@ export async function visitSolver(node: Solver, context: MetaSolverStrategyConte
     const problem = context.variables.get(node.problemName.ref);
     if (problem?.typeId === undefined) {
         throw new Error("Problem not found for solver: " + node.problemName.ref.name);
+    }
+
+    // The ID might reference a saved meta solver strategy instead of a solver.
+    // If so, execute that strategy recursively against the current problem.
+    const strategy = strategyStore.byNameAndType(node.solverId.solverId, problem.typeId);
+    if (strategy !== undefined) {
+        if (node.settings.length > 0) {
+            throw new Error(`Meta Solver Strategy '${strategy.name}' does not accept solver settings.`);
+        }
+        if (node.subRoutines !== undefined) {
+            throw new Error(`Meta Solver Strategy '${strategy.name}' does not accept sub routines.`);
+        }
+
+        const nestedContext: MetaSolverStrategyContext = {
+            variables: new Map<ProblemName, ProblemDto<any>>(),
+            arrays: new Map<ProblemArrayName, ProblemDto<any>[]>()
+        };
+
+        return await solveStrategy(strategy, problem, nestedContext);
     }
 
     // Update solver, solver settings and start solving the problem

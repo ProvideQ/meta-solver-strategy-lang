@@ -79,6 +79,28 @@ export class MetaSolverStrategyCompletionsProvider extends DefaultCompletionProv
 
                     acceptor(context, value)
                 }
+
+                // Also offer saved meta solver strategies for the current problem type
+                const strategies = await toolboxApi.fetchStrategies(problemType.id);
+                for (const strategy of strategies) {
+                    const solverId = getSolverIdNode(context.node);
+                    const value: CompletionValueItem = {
+                        label: strategy.name,
+                        kind: CompletionItemKind.Constant,
+                        documentation: `Meta Solver Strategy: ${strategy.name}`,
+                        insertTextFormat: 2,
+                    };
+                    if (solverId) {
+                        value.textEdit = {
+                            range: solverId?.$cstNode!.range ?? context.node.$cstNode!.range,
+                            newText: `${strategy.name}()`,
+                        };
+                    } else {
+                        value.insertText = `${strategy.name}()`;
+                    }
+
+                    acceptor(context, value)
+                }
                 break;
             }
             case ProblemAttribute.$type: {

@@ -81,6 +81,18 @@ ${type.description}`
                 const problemType = getProblemTypeBySolverId(toolboxApi, solverId);
                 if (!problemType) break;
 
+                // The ID might reference a saved meta solver strategy instead of a solver
+                const strategies = await toolboxApi.fetchStrategies(problemType.id);
+                const strategy = strategies.find(s => s.name === solverId.solverId);
+                if (strategy) {
+                    return {
+                        contents: {
+                            kind: 'markdown',
+                            value: `**Meta Solver Strategy for ${problemType.id}**\n\`\`\`\n${strategy.code}\n\`\`\``
+                        }
+                    };
+                }
+
                 const solvers = await toolboxApi.fetchSolvers(problemType.id);
                 const solver = solvers.find(s => s.id === solverId.solverId);
                 if (!solver) break;

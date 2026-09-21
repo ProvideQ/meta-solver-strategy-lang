@@ -1,6 +1,7 @@
 import { Controller, Post, Get, Patch, Body, Param, Query, Delete, HttpException, HttpStatus } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 import { solve, inferProblemTypeIdFromCode, MetaSolverStrategy } from '../interpreter.js';
+import { strategyStore } from '../strategy-store.js';
 import {
     ApiTags,
     ApiOperation,
@@ -59,8 +60,6 @@ function toStrategyDto(strategy: MetaSolverStrategy): StrategyDto {
 @ApiTags('strategies')
 @Controller('strategies')
 export class StrategyController {
-    private static readonly strategies = new Map<string, MetaSolverStrategy>();
-
     @Post()
     @ApiOperation({ summary: 'Save a new strategy' })
     @ApiCreatedResponse({ description: 'Strategy saved', type: StrategyDto })
@@ -75,7 +74,7 @@ export class StrategyController {
         }
         const id = uuidv4();
         const strategy = { ...body, id, problemTypeId } as MetaSolverStrategy;
-        StrategyController.strategies.set(id, strategy);
+        strategyStore.set(strategy);
         return toStrategyDto(strategy);
     }
 
@@ -90,7 +89,7 @@ export class StrategyController {
         @Param('id') id: string,
         @Body() body: UpdateStrategyInput
     ): Promise<StrategyDto> {
-        const strategy = StrategyController.strategies.get(id);
+        const strategy = strategyStore.get(id);
         if (!strategy) {
             throw new HttpException('Strategy not found', HttpStatus.NOT_FOUND);
         }
@@ -105,7 +104,7 @@ export class StrategyController {
         if (body.name !== undefined) {
             strategy.name = body.name;
         }
-        StrategyController.strategies.set(id, strategy);
+        strategyStore.set(strategy);
         return toStrategyDto(strategy);
     }
 
@@ -115,7 +114,7 @@ export class StrategyController {
     @ApiNotFoundResponse({ description: 'Strategy not found' })
     @ApiParam({ name: 'id', description: 'Strategy id' })
     public async getStrategy(@Param('id') id: string): Promise<StrategyDto> {
-        const strategy = StrategyController.strategies.get(id);
+        const strategy = strategyStore.get(id);
         if (!strategy) {
             throw new HttpException('Strategy not found', HttpStatus.NOT_FOUND);
         }
@@ -127,10 +126,7 @@ export class StrategyController {
     @ApiOkResponse({ description: 'List of strategies returned', type: StrategyDto, isArray: true })
     @ApiQuery({ name: 'type', required: false, description: 'Filter by problemTypeId' })
     public async listStrategies(@Query('type') type?: string): Promise<StrategyDto[]> {
-        const all = type
-            ? Array.from(StrategyController.strategies.values()).filter(s => s.problemTypeId === type)
-            : Array.from(StrategyController.strategies.values());
-        return all.map(toStrategyDto);
+        return strategyStore.list(type).map(toStrategyDto);
     }
 
     @Delete(':id')
@@ -139,7 +135,7 @@ export class StrategyController {
     @ApiNotFoundResponse({ description: 'Strategy not found' })
     @ApiParam({ name: 'id', description: 'Strategy id' })
     public async deleteStrategy(@Param('id') id: string): Promise<{ success: boolean }> {
-        const existed = StrategyController.strategies.delete(id);
+        const existed = strategyStore.delete(id);
         if (!existed) {
             throw new HttpException('Strategy not found', HttpStatus.NOT_FOUND);
         }
@@ -157,7 +153,7 @@ export class StrategyController {
         @Param('strategyId') strategyId: string,
         @Body() body: ExecuteStrategyInput
     ): Promise<{ result: ProblemDto<any> | undefined }> {
-        const strategy = StrategyController.strategies.get(strategyId);
+        const strategy = strategyStore.get(strategyId);
         if (!strategy) {
             throw new HttpException('Strategy not found', HttpStatus.NOT_FOUND);
         }
