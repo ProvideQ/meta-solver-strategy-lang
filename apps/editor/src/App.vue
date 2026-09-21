@@ -53,7 +53,7 @@
           />
         </div>
 
-        <div class="flex-1 min-h-0 bg-white rounded-lg shadow-card border border-app-border flex flex-col">
+        <div class="flex-1 md:min-h-0 bg-white rounded-lg shadow-card border border-app-border flex flex-col">
           <div id="monaco-editor-root" class="flex-1"></div>
           <div class="px-4 py-2 bg-gray-50 border-t border-app-border text-sm text-app-muted truncate">
             {{ statusMessage }}
